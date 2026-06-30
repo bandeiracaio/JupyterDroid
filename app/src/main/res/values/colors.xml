@@ -3,6 +3,22 @@
     <color name="purple_700">#FF3700B3</color>
     <color name="teal_200">#FF03DAC5</color>
     <color name="white">#FFFFFFFF</color>
-    <color name="code_background">#F5F5F5</color>
-    <color name="error_red">#D32F2F</color>
+
+    <!-- App background -->
+    <color name="background_dark">#121212</color>
+
+    <!-- Code cells -->
+    <color name="code_background">#1E1E1E</color>
+    <color name="code_text">#E0E0E0</color>
+    <color name="output_background">#0D0D0D</color>
+    <color name="hint_text">#555555</color>
+
+    <!-- Left border accents -->
+    <color name="cell_border_code">#BB86FC</color>
+    <color name="cell_border_output">#03DAC5</color>
+    <color name="cell_border_md">#FFB74D</color>
+
+    <!-- Output colours -->
+    <color name="error_red">#FF6B6B</color>
+    <color name="output_text">#A8C7A8</color>
 </resources>

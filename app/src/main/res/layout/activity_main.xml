@@ -2,32 +2,65 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@color/background_dark"
     android:orientation="vertical">
-
-    <Button
-        android:id="@+id/newNotebookButton"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_margin="16dp"
-        android:text="New Notebook" />
-
-    <Button
-        android:id="@+id/openNotebookButton"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginHorizontal="16dp"
-        android:text="Open .ipynb file" />
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_margin="16dp"
-        android:text="Recent"
+        android:layout_marginStart="20dp"
+        android:layout_marginTop="32dp"
+        android:layout_marginBottom="4dp"
+        android:text="JupyterDroid"
+        android:textColor="@color/white"
+        android:textSize="28sp"
         android:textStyle="bold" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="20dp"
+        android:layout_marginBottom="24dp"
+        android:text="Python notebooks on-device"
+        android:textColor="#888888"
+        android:textSize="13sp" />
+
+    <Button
+        android:id="@+id/newNotebookButton"
+        android:layout_width="match_parent"
+        android:layout_height="52dp"
+        android:layout_marginHorizontal="16dp"
+        android:layout_marginBottom="10dp"
+        android:text="New Notebook"
+        android:textAllCaps="false"
+        android:textSize="15sp" />
+
+    <Button
+        android:id="@+id/openNotebookButton"
+        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+        android:layout_width="match_parent"
+        android:layout_height="52dp"
+        android:layout_marginHorizontal="16dp"
+        android:text="Open .ipynb File"
+        android:textAllCaps="false"
+        android:textSize="15sp" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="20dp"
+        android:layout_marginTop="28dp"
+        android:layout_marginBottom="8dp"
+        android:text="Recent"
+        android:textColor="#888888"
+        android:textSize="11sp"
+        android:textAllCaps="true"
+        android:letterSpacing="0.1" />
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recentFilesRecyclerView"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1" />
+
 </LinearLayout>

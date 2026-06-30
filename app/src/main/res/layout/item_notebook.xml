@@ -3,5 +3,10 @@
     android:id="@+id/fileNameText"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:padding="16dp"
-    android:textSize="16sp" />
+    android:background="?attr/selectableItemBackground"
+    android:drawablePadding="12dp"
+    android:fontFamily="monospace"
+    android:paddingHorizontal="20dp"
+    android:paddingVertical="14dp"
+    android:textColor="@color/code_text"
+    android:textSize="14sp" />

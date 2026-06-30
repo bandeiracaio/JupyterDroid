@@ -6,6 +6,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.EditText
+import android.widget.ImageButton
 import android.widget.TextView
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.RecyclerView
@@ -13,14 +14,19 @@ import com.jupyterdroid.R
 import com.jupyterdroid.model.Cell
 
 class CodeCellViewHolder(view: View) : RecyclerView.ViewHolder(view) {
+    private val executionCount: TextView = view.findViewById(R.id.executionCount)
+    private val runButton: ImageButton = view.findViewById(R.id.runButton)
     val sourceEdit: EditText = view.findViewById(R.id.sourceEdit)
-    val outputText: TextView = view.findViewById(R.id.outputText)
+    private val outputContainer: ViewGroup = view.findViewById(R.id.outputContainer)
+    private val outputText: TextView = view.findViewById(R.id.outputText)
     private var watcher: TextWatcher? = null
 
-    fun bind(cell: Cell.Code, position: Int, onSourceChanged: (Int, String) -> Unit) {
-        // Remove old watcher before setText to avoid feedback loop on rebind
+    fun bind(cell: Cell.Code, position: Int, onSourceChanged: (Int, String) -> Unit, onRun: (Int) -> Unit) {
         watcher?.let { sourceEdit.removeTextChangedListener(it) }
         sourceEdit.setText(cell.source)
+
+        executionCount.text = if (cell.executionCount != null) "[${cell.executionCount}]" else "[ ]"
+        runButton.setOnClickListener { onRun(position) }
 
         watcher = object : TextWatcher {
             override fun afterTextChanged(s: Editable) = onSourceChanged(position, s.toString())
@@ -31,20 +37,16 @@ class CodeCellViewHolder(view: View) : RecyclerView.ViewHolder(view) {
 
         when {
             cell.error.isNotEmpty() -> {
-                outputText.visibility = View.VISIBLE
-                outputText.setTextColor(
-                    ContextCompat.getColor(itemView.context, R.color.error_red)
-                )
+                outputContainer.visibility = View.VISIBLE
+                outputText.setTextColor(ContextCompat.getColor(itemView.context, R.color.error_red))
                 outputText.text = cell.error
             }
             cell.output.isNotEmpty() -> {
-                outputText.visibility = View.VISIBLE
-                outputText.setTextColor(
-                    ContextCompat.getColor(itemView.context, android.R.color.black)
-                )
+                outputContainer.visibility = View.VISIBLE
+                outputText.setTextColor(ContextCompat.getColor(itemView.context, R.color.output_text))
                 outputText.text = cell.output
             }
-            else -> outputText.visibility = View.GONE
+            else -> outputContainer.visibility = View.GONE
         }
     }
 

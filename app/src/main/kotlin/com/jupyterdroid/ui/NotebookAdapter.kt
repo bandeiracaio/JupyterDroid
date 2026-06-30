@@ -31,7 +31,7 @@ class NotebookAdapter(
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
         when (holder) {
             is CodeCellViewHolder -> holder.bind(
-                cells[position] as Cell.Code, position, ::updateSource
+                cells[position] as Cell.Code, position, ::updateSource, onRunCell
             )
             is MarkdownCellViewHolder -> holder.bind(
                 cells[position] as Cell.Markdown, position, ::updateSource
