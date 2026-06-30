@@ -1,5 +1,7 @@
 package com.jupyterdroid.ui
 
+import android.os.Handler
+import android.os.Looper
 import android.text.Editable
 import android.text.TextWatcher
 import android.view.LayoutInflater
@@ -20,18 +22,29 @@ class CodeCellViewHolder(view: View) : RecyclerView.ViewHolder(view) {
     private val outputContainer: ViewGroup = view.findViewById(R.id.outputContainer)
     private val outputText: TextView = view.findViewById(R.id.outputText)
     private var watcher: TextWatcher? = null
+    private val highlightHandler = Handler(Looper.getMainLooper())
+    private var highlightRunnable: Runnable? = null
 
     fun bind(cell: Cell.Code, position: Int, onSourceChanged: (Int, String) -> Unit, onRun: (Int) -> Unit) {
         watcher?.let { sourceEdit.removeTextChangedListener(it) }
         sourceEdit.setText(cell.source)
 
+        // Highlight immediately on bind
+        sourceEdit.text?.let { PythonHighlighter.highlight(it) }
+
         executionCount.text = if (cell.executionCount != null) "[${cell.executionCount}]" else "[ ]"
         runButton.setOnClickListener { onRun(position) }
 
         watcher = object : TextWatcher {
-            override fun afterTextChanged(s: Editable) = onSourceChanged(position, s.toString())
             override fun beforeTextChanged(s: CharSequence, start: Int, count: Int, after: Int) {}
             override fun onTextChanged(s: CharSequence, start: Int, before: Int, count: Int) {}
+            override fun afterTextChanged(s: Editable) {
+                onSourceChanged(position, s.toString())
+                // Debounce highlight: wait 200ms after last keystroke
+                highlightRunnable?.let { highlightHandler.removeCallbacks(it) }
+                highlightRunnable = Runnable { PythonHighlighter.highlight(s) }
+                    .also { highlightHandler.postDelayed(it, 200) }
+            }
         }
         sourceEdit.addTextChangedListener(watcher)
 

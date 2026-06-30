@@ -86,12 +86,13 @@ class NotebookActivity : AppCompatActivity() {
                 try {
                     km.execute(cell.source)
                 } catch (e: Exception) {
+                    val msg = e.message ?: e.javaClass.simpleName
                     km.reset()
                     withContext(Dispatchers.Main) {
                         Snackbar.make(
                             findViewById(R.id.cellsRecyclerView),
-                            "Kernel restarted",
-                            Snackbar.LENGTH_SHORT
+                            "Kernel error: $msg",
+                            Snackbar.LENGTH_LONG
                         ).show()
                     }
                     null
