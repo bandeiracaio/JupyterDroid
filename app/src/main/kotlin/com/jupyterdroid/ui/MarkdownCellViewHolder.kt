@@ -18,6 +18,7 @@ class MarkdownCellViewHolder(view: View, private val markwon: Markwon) : Recycle
     private var textWatcher: TextWatcher? = null
 
     fun bind(cell: Cell.Markdown, position: Int, onSourceChanged: (Int, String) -> Unit) {
+        sourceEdit.removeTextChangedListener(textWatcher)
         sourceEdit.setText(cell.source)
         render(cell.source)
 
@@ -35,7 +36,6 @@ class MarkdownCellViewHolder(view: View, private val markwon: Markwon) : Recycle
             }
         }
 
-        sourceEdit.removeTextChangedListener(textWatcher)
         val watcher = object : TextWatcher {
             override fun afterTextChanged(s: Editable) = onSourceChanged(position, s.toString())
             override fun beforeTextChanged(s: CharSequence, start: Int, count: Int, after: Int) {}
