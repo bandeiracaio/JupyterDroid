@@ -197,6 +197,18 @@ app/src/main/
 
 ---
 
+## Example notebooks
+
+The app ships with a built-in example that appears in your recent files list on first launch.
+
+| Notebook | Description |
+|---|---|
+| [`iris_analysis.ipynb`](examples/iris_analysis.ipynb) | Full EDA of the Iris dataset — descriptive stats, ASCII histograms, correlation matrix, KNN classifier |
+
+> **Packages required:** tap the pip install button in the notebook toolbar and install `numpy pandas scikit-learn`.
+
+---
+
 ## Contributing
 
 Pull requests are welcome. For significant changes, open an issue first to discuss what you'd like to change.
