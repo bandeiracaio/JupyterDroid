@@ -1,210 +1,214 @@
 # JupyterDroid
 
-A native Android app for running Jupyter notebooks locally on-device — fast app, fast execution.
+> Native Jupyter notebooks on Android — no server, no browser, just Python.
 
-No remote server. No WebView. Python runs in-process, notebooks open instantly, and everything works offline.
+[![Release](https://img.shields.io/github/v/release/bandeiracaio/JupyterDroid?label=release)](https://github.com/bandeiracaio/JupyterDroid/releases/latest)
+[![Android](https://img.shields.io/badge/Android-7.0%2B-brightgreen?logo=android)](https://developer.android.com/about/versions/nougat)
+[![Kotlin](https://img.shields.io/badge/Kotlin-1.9-blue?logo=kotlin)](https://kotlinlang.org)
+[![Python](https://img.shields.io/badge/Python-3.11-yellow?logo=python)](https://www.python.org)
+[![License](https://img.shields.io/github/license/bandeiracaio/JupyterDroid)](LICENSE)
 
----
-
-## Philosophy
-
-- **Fast above all** — lean UI, in-process kernel, no unnecessary layers
-- **Real notebooks** — reads and writes standard `.ipynb` files compatible with JupyterLab and VS Code
-- **Native Android** — Kotlin + Chaquopy, not a web wrapper
+JupyterDroid runs Jupyter notebooks locally on your Android device. CPython 3.11 executes in-process via [Chaquopy](https://chaquo.com/chaquopy/) — no Wi-Fi required, no remote kernel, no WebView. Notebooks are saved as standard `.ipynb` files that open directly in JupyterLab and VS Code.
 
 ---
 
-## What it can do
+## Features
 
-- Create new `.ipynb` notebooks (standard Jupyter nbformat 4 — opens in JupyterLab/VS Code)
-- Open existing `.ipynb` files from device storage via file picker
-- Keep a recent files list
-- **Code cells** — write Python, run it, see stdout/stderr inline below the cell
-- State persists across cells — define a variable in cell 1, use it in cell 2
-- **Markdown cells** — tap to edit, tap away to render (headings, bold, lists)
-- Run all cells in order with one tap
-- **pip install** packages on-device without leaving the app
-- Explicit save button + auto-save when the app backgrounds
-- Kernel crash recovery — auto-restarts Python and shows a notification
+- **Real `.ipynb` files** — reads and writes standard nbformat 4; compatible with JupyterLab, VS Code, and Colab
+- **In-process Python kernel** — CPython 3.11 runs inside the app, no network required
+- **Code cells** — write and execute Python; stdout/stderr shown inline below each cell
+- **Persistent state** — variables defined in one cell are available in all subsequent cells
+- **Markdown cells** — tap to edit, tap away to render (headings, bold, italic, lists, code)
+- **Run all** — execute every code cell in order with one tap
+- **pip install** — install packages on-device from a bottom sheet, without leaving the app
+- **Auto-save** — saves automatically when the app goes to background; explicit save button also available
+- **Kernel recovery** — detects crashes, restarts Python automatically, and notifies you
 
-## What it cannot do (yet)
+### Not yet supported
 
-- **Rich outputs** — matplotlib plots, pandas DataFrames, images — only text stdout/stderr for now
-- **Kernel interrupt** — no way to stop a running cell mid-execution
-- **Reorder or delete cells** — cells can only be added at the bottom
-- **Syntax highlighting** in code cells
-- **Write back to original file** — files opened via picker are copied to cache; saves go to the cache copy, not back to the original location
-- **Export** — no PDF, HTML, or other formats
-- **Multiple kernels** — one shared Python state per app session
+| Feature | Notes |
+|---|---|
+| Rich outputs | Only text stdout/stderr — no plots, images, or DataFrames |
+| Kernel interrupt | Running cells cannot be stopped mid-execution |
+| Cell reorder / delete | Cells can only be appended |
+| Syntax highlighting | Plain EditText for now |
+| Write-back to original file | Files opened via picker are copied to cache; saves go to the cache copy |
+| Export | No PDF, HTML, or other formats |
 
 ---
 
-## Install on Android
+## Installation
 
-### Option A — Direct APK install (easiest)
+### Download APK (easiest)
 
-**1. Enable Unknown Sources on your phone**
+1. Go to the [latest release](https://github.com/bandeiracaio/JupyterDroid/releases/latest) and download `app-debug.apk`
+2. On your phone: Settings → Security → enable **Install unknown apps** for your browser or Files app
+3. Open the downloaded APK and tap **Install**
 
-Settings → Security (or Apps) → enable **Install unknown apps** for your browser or Files app.
+### Install via ADB
 
-**2. Enable USB Debugging**
-
-Settings → About phone → tap **Build Number** 7 times → Developer Options → enable **USB Debugging**.
-
-**3. Download the APK**
-
-Go to the [latest release](https://github.com/bandeiracaio/JupyterDroid/releases/latest) and download `app-debug.apk`.
-
-Or install via ADB from your Mac:
+Requires [Android platform-tools](https://developer.android.com/tools/releases/platform-tools) (`adb`).
 
 ```bash
-# Download
+# Download the APK
 curl -L https://github.com/bandeiracaio/JupyterDroid/releases/latest/download/app-debug.apk -o app-debug.apk
 
-# Connect phone via USB, then:
-adb install app-debug.apk
-```
+# Enable USB Debugging on your phone:
+# Settings → About phone → tap Build Number 7× → Developer Options → USB Debugging
 
-If `adb` is not on your PATH, use the full path: `~/android-sdk/platform-tools/adb`.
-
-**4. Verify ADB sees your phone**
-
-```bash
+# Connect via USB, verify the device is visible
 adb devices
-```
 
-You should see your device listed as `device`. If it says `unauthorized`, unlock your phone and tap **Allow** on the USB debugging prompt.
-
-**5. Install**
-
-```bash
+# Install
 adb install app-debug.apk
 ```
 
-`Success` means the app is installed. Open **JupyterDroid** from your launcher.
+If `adb devices` shows `unauthorized`, unlock your phone and tap **Allow** on the USB debugging prompt.
 
-> **Note:** This is a debug build. Android may warn you it's from an unknown source — that's expected for a sideloaded APK.
+> This is a debug build signed with the Android debug key. Your phone may warn about an unknown source — that is expected for sideloaded APKs.
 
----
+### Build from source
 
-### Option B — Build from source (Android Studio)
-
-Requires [Android Studio](https://developer.android.com/studio) (latest stable) and an Android device or emulator running Android 7.0+ (API 24).
-
-**1. Clone and open**
+Requires [Android Studio](https://developer.android.com/studio) (latest stable) and a device or emulator running Android 7.0+ (API 24).
 
 ```bash
 git clone https://github.com/bandeiracaio/JupyterDroid.git
 ```
 
-File → Open → select the `JupyterDroid` folder → Open.
+1. Open the `JupyterDroid` folder in Android Studio
+2. Click **Sync Now** when prompted — this downloads Chaquopy and Python 3.11 (~30 MB)
+3. Connect a device or start an emulator
+4. Press **Run** (▶) or `Shift+F10`
 
-**2. Sync Gradle**
-
-Android Studio will prompt "Gradle files have changed" — click **Sync Now**. This downloads Chaquopy and Python 3.11 (~30 MB).
-
-**3. Connect your device**
-
-- **Physical device:** enable Developer Options (Settings → About → tap Build Number 7 times), then enable USB Debugging. Connect via USB.
-- **Emulator:** Device Manager → Create Device → Pixel profile → API 24+ system image → Finish.
-
-**4. Run**
-
-Click the green **Run** button (▶) or press `Shift+F10`.
-
-> First build takes a few minutes — Chaquopy compiles Python for ARM. Subsequent builds are fast.
+> First build takes a few minutes while Chaquopy compiles CPython for ARM. Subsequent builds are fast.
 
 ---
 
-## Architecture
+## How it works
 
-Three layers, no magic:
+### Architecture
 
 ```
-UI (RecyclerView of cells)
-        ↓
-KernelManager (Kotlin coroutines)
-        ↓
-kernel_runner.py via Chaquopy (CPython in-process)
+┌─────────────────────────────────┐
+│  UI Layer                       │
+│  RecyclerView of Cell items     │
+│  CodeCellViewHolder             │
+│  MarkdownCellViewHolder         │
+└────────────────┬────────────────┘
+                 │ suspend fun on Dispatchers.IO
+┌────────────────▼────────────────┐
+│  KernelManager (singleton)      │
+│  Kotlin Coroutines              │
+└────────────────┬────────────────┘
+                 │ Chaquopy JNI bridge
+┌────────────────▼────────────────┐
+│  kernel_runner.py               │
+│  CPython 3.11 in-process        │
+│  exec() + stdout/stderr capture │
+└─────────────────────────────────┘
 ```
 
 ### Execution flow
 
 1. User taps **Run** on a code cell
-2. `NotebookActivity` calls `KernelManager.execute(source)` on `Dispatchers.IO`
-3. Chaquopy calls into `kernel_runner.py`, captures stdout/stderr
-4. `ExecutionResult(output, error, executionCount)` returned to main thread
-5. Cell output updates, `RecyclerView` item refreshes
+2. `NotebookActivity` dispatches `KernelManager.execute(source)` to `Dispatchers.IO`
+3. Chaquopy calls `kernel_runner.py::execute()`, which redirects `sys.stdout`/`sys.stderr` to `StringIO` buffers and runs the source with `exec(compile(source, "<cell>", "exec"), globals)`
+4. Python returns `{output, error, execution_count}` to Kotlin as a `PyObject` dict
+5. `ExecutionResult` is posted back to the main thread; the RecyclerView item refreshes
 
-### File structure
+The Python kernel is a singleton — globals persist across cells for the lifetime of the app session. `KernelManager.reset()` clears them.
+
+### File format
+
+Notebooks are read and written as standard [nbformat 4](https://nbformat.readthedocs.io/en/latest/format_description.html) JSON. The internal `Cell` sealed class maps directly to `NotebookCellJson` via `NotebookFile.kt`. Line endings follow the `.ipynb` convention: each line in a `source` array ends with `\n` except the last.
+
+### Project structure
 
 ```
 app/src/main/
 ├── kotlin/com/jupyterdroid/
-│   ├── MainActivity.kt              # file list + create new
-│   ├── NotebookActivity.kt          # notebook editor
-│   ├── model/
-│   │   ├── Notebook.kt              # data classes + JSON serialization
-│   │   └── Cell.kt                  # sealed class CodeCell / MarkdownCell
+│   ├── JupyterDroidApp.kt           # Application — starts Chaquopy
+│   ├── MainActivity.kt              # Recent files list + new/open buttons
+│   ├── NotebookActivity.kt          # Notebook editor
 │   ├── kernel/
-│   │   └── KernelManager.kt         # Chaquopy lifecycle, execute(), pip()
+│   │   └── KernelManager.kt         # Singleton; execute(), pipInstall(), reset()
+│   ├── model/
+│   │   ├── Cell.kt                  # Sealed class: Code | Markdown
+│   │   └── NotebookJson.kt          # @Serializable nbformat 4 schema
 │   ├── ui/
-│   │   ├── NotebookAdapter.kt
-│   │   ├── CodeCellViewHolder.kt
-│   │   └── MarkdownCellViewHolder.kt
+│   │   ├── NotebookAdapter.kt       # RecyclerView adapter
+│   │   ├── CodeCellViewHolder.kt    # Source EditText + output TextView
+│   │   ├── MarkdownCellViewHolder.kt# Edit/render toggle via Markwon
+│   │   └── PipInstallBottomSheet.kt # pip install UI
 │   └── util/
-│       └── NotebookFile.kt          # read/write .ipynb to storage
+│       └── NotebookFile.kt          # .ipynb read/write
 └── python/
-    └── kernel_runner.py             # exec-based kernel, stdout/stderr capture
+    └── kernel_runner.py             # exec-based kernel, stdout/stderr capture, pip
 ```
 
 ---
 
-## Tech Stack
+## Tech stack
 
 | | |
 |---|---|
 | Language | Kotlin |
-| Min SDK | API 24 (Android 7.0) |
+| Min SDK | API 24 (Android 7.0 Nougat) |
+| Target SDK | API 34 (Android 14) |
 | Python runtime | [Chaquopy](https://chaquo.com/chaquopy/) 15.0.1 |
 | Python version | 3.11 |
-| JSON | `kotlinx.serialization` |
-| Markdown | [Markwon](https://github.com/noties/Markwon) |
-| Concurrency | Kotlin Coroutines |
+| Serialization | `kotlinx.serialization-json` 1.6.3 |
+| Markdown rendering | [Markwon](https://github.com/noties/Markwon) 4.6.2 |
+| UI components | Material Components 1.11.0 |
+| Concurrency | Kotlin Coroutines 1.7.3 |
+| Build | Gradle 8.2, AGP 8.2.0 |
 
 ---
 
-## Error Handling
+## Error handling
 
 | Scenario | Behaviour |
 |---|---|
-| Python exception | stderr shown inline below cell in red |
-| Kernel crash | auto-restart + snackbar "Kernel restarted" |
-| pip install failure | stderr shown in bottom sheet |
-| File I/O error | toast with OS error message |
+| Python exception in cell | Full traceback shown inline below cell in red |
+| Kernel crash | `KernelManager.reset()` called automatically; snackbar notifies user |
+| pip install failure | stderr shown in the bottom sheet; button re-enabled |
+| File read/write error | Toast with the OS error message |
 
 ---
 
 ## Roadmap
 
-### V1 (current — `feat/v1-implementation`)
-- [x] Project scaffold (Gradle + Chaquopy)
-- [x] `.ipynb` read/write (standard nbformat 4)
-- [x] Kernel integration (exec-based, persistent globals)
-- [x] Code cell UI + execution
-- [x] Markdown cell UI + rendering
-- [x] pip install UI
-- [x] Save / auto-save
+### V1 — current
+- [x] Gradle scaffold with Chaquopy 15.0.1
+- [x] `.ipynb` read/write (nbformat 4)
+- [x] exec-based Python kernel with persistent globals
+- [x] Code cell UI + execution + output display
+- [x] Markdown cell UI + Markwon rendering
+- [x] pip install bottom sheet
+- [x] Save / auto-save on pause
 
-### V2 (planned)
-- Rich outputs: matplotlib plots, pandas tables, images
-- Kernel interrupt controls
-- Reorder / delete cells
-- Syntax highlighting in code cells
-- Write back to original file location
+### V2 — planned
+- [ ] Rich outputs: matplotlib figures, pandas DataFrames, inline images
+- [ ] Kernel interrupt (stop a running cell)
+- [ ] Reorder and delete cells
+- [ ] Syntax highlighting in code cells
+- [ ] Write back to original file location (not just cache copy)
+- [ ] Export to HTML / PDF
 
 ---
 
-## Design Spec
+## Contributing
 
-Full design document: [`docs/superpowers/specs/2026-06-29-jupyterdroid-design.md`](docs/superpowers/specs/2026-06-29-jupyterdroid-design.md)
+Pull requests are welcome. For significant changes, open an issue first to discuss what you'd like to change.
+
+```bash
+git clone https://github.com/bandeiracaio/JupyterDroid.git
+cd JupyterDroid
+# Open in Android Studio and build
+```
+
+---
+
+## License
+
+[MIT](LICENSE)
