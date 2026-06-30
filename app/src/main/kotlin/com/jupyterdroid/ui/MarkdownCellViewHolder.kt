@@ -15,6 +15,7 @@ import io.noties.markwon.Markwon
 class MarkdownCellViewHolder(view: View, private val markwon: Markwon) : RecyclerView.ViewHolder(view) {
     private val sourceEdit: EditText = view.findViewById(R.id.sourceEdit)
     private val renderedText: TextView = view.findViewById(R.id.renderedText)
+    private var textWatcher: TextWatcher? = null
 
     fun bind(cell: Cell.Markdown, position: Int, onSourceChanged: (Int, String) -> Unit) {
         sourceEdit.setText(cell.source)
@@ -34,11 +35,14 @@ class MarkdownCellViewHolder(view: View, private val markwon: Markwon) : Recycle
             }
         }
 
-        sourceEdit.addTextChangedListener(object : TextWatcher {
+        sourceEdit.removeTextChangedListener(textWatcher)
+        val watcher = object : TextWatcher {
             override fun afterTextChanged(s: Editable) = onSourceChanged(position, s.toString())
             override fun beforeTextChanged(s: CharSequence, start: Int, count: Int, after: Int) {}
             override fun onTextChanged(s: CharSequence, start: Int, before: Int, count: Int) {}
-        })
+        }
+        textWatcher = watcher
+        sourceEdit.addTextChangedListener(watcher)
     }
 
     private fun render(source: String) {
