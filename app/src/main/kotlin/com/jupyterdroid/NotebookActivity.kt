@@ -12,6 +12,7 @@ import com.jupyterdroid.kernel.KernelManager
 import com.jupyterdroid.model.Cell
 import com.jupyterdroid.model.NotebookJson
 import com.jupyterdroid.ui.NotebookAdapter
+import com.jupyterdroid.ui.PipInstallBottomSheet
 import com.jupyterdroid.util.NotebookFile
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -66,7 +67,7 @@ class NotebookActivity : AppCompatActivity() {
                 R.id.action_add_code -> { adapter.addCodeCell(); true }
                 R.id.action_add_md -> { adapter.addMarkdownCell(); true }
                 R.id.action_pip -> {
-                    // TODO: wire up in Task 7 — PipInstallBottomSheet().show(supportFragmentManager, PipInstallBottomSheet.TAG)
+                    PipInstallBottomSheet().show(supportFragmentManager, PipInstallBottomSheet.TAG)
                     true
                 }
                 R.id.action_save -> { save(); true }
