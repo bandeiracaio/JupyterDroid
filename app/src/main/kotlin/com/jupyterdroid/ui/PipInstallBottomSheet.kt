@@ -7,10 +7,10 @@ import android.view.ViewGroup
 import android.widget.Button
 import android.widget.EditText
 import android.widget.TextView
+import androidx.lifecycle.lifecycleScope
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.jupyterdroid.R
 import com.jupyterdroid.kernel.KernelManager
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -36,7 +36,7 @@ class PipInstallBottomSheet : BottomSheetDialogFragment() {
             installButton.isEnabled = false
             outputText.text = "Installing $pkg…"
 
-            CoroutineScope(Dispatchers.Main).launch {
+            lifecycleScope.launch {
                 val result = withContext(Dispatchers.IO) { km.pipInstall(pkg) }
                 outputText.text = when {
                     result.success -> result.stdout.ifEmpty { "Installed $pkg" }
