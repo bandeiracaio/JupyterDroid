@@ -41,39 +41,76 @@ No remote server. No WebView. Python runs in-process, notebooks open instantly, 
 
 ## Install on Android
 
-You need Android Studio to build and install the app. No APK is distributed yet.
+### Option A — Direct APK install (easiest)
 
-### Requirements
+**1. Enable Unknown Sources on your phone**
 
-- [Android Studio](https://developer.android.com/studio) (latest stable)
-- An Android device running Android 7.0+ (API 24), or an emulator
-- USB cable (for physical device) or AVD configured (for emulator)
+Settings → Security (or Apps) → enable **Install unknown apps** for your browser or Files app.
 
-### Steps
+**2. Enable USB Debugging**
 
-**1. Clone the repo**
+Settings → About phone → tap **Build Number** 7 times → Developer Options → enable **USB Debugging**.
+
+**3. Download the APK**
+
+Go to the [latest release](https://github.com/bandeiracaio/JupyterDroid/releases/latest) and download `app-debug.apk`.
+
+Or install via ADB from your Mac:
+
+```bash
+# Download
+curl -L https://github.com/bandeiracaio/JupyterDroid/releases/latest/download/app-debug.apk -o app-debug.apk
+
+# Connect phone via USB, then:
+adb install app-debug.apk
+```
+
+If `adb` is not on your PATH, use the full path: `~/android-sdk/platform-tools/adb`.
+
+**4. Verify ADB sees your phone**
+
+```bash
+adb devices
+```
+
+You should see your device listed as `device`. If it says `unauthorized`, unlock your phone and tap **Allow** on the USB debugging prompt.
+
+**5. Install**
+
+```bash
+adb install app-debug.apk
+```
+
+`Success` means the app is installed. Open **JupyterDroid** from your launcher.
+
+> **Note:** This is a debug build. Android may warn you it's from an unknown source — that's expected for a sideloaded APK.
+
+---
+
+### Option B — Build from source (Android Studio)
+
+Requires [Android Studio](https://developer.android.com/studio) (latest stable) and an Android device or emulator running Android 7.0+ (API 24).
+
+**1. Clone and open**
 
 ```bash
 git clone https://github.com/bandeiracaio/JupyterDroid.git
-cd JupyterDroid
 ```
-
-**2. Open in Android Studio**
 
 File → Open → select the `JupyterDroid` folder → Open.
 
-**3. Sync Gradle**
+**2. Sync Gradle**
 
-Android Studio will prompt "Gradle files have changed" — click **Sync Now**. This downloads Chaquopy and Python 3.11 (~30 MB). Wait until the sync finishes.
+Android Studio will prompt "Gradle files have changed" — click **Sync Now**. This downloads Chaquopy and Python 3.11 (~30 MB).
 
-**4. Connect your device**
+**3. Connect your device**
 
-- **Physical device:** enable Developer Options on your phone (Settings → About → tap Build Number 7 times), then enable USB Debugging. Connect via USB. Your device should appear in the device dropdown at the top of Android Studio.
-- **Emulator:** in Android Studio open Device Manager (right sidebar) → Create Device → choose a Pixel profile → select an API 24+ system image → Finish.
+- **Physical device:** enable Developer Options (Settings → About → tap Build Number 7 times), then enable USB Debugging. Connect via USB.
+- **Emulator:** Device Manager → Create Device → Pixel profile → API 24+ system image → Finish.
 
-**5. Run**
+**4. Run**
 
-Click the green **Run** button (▶) or press `Shift+F10`. Android Studio builds the APK, installs it, and launches JupyterDroid on your device.
+Click the green **Run** button (▶) or press `Shift+F10`.
 
 > First build takes a few minutes — Chaquopy compiles Python for ARM. Subsequent builds are fast.
 
