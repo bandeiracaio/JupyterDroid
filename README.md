@@ -14,13 +14,105 @@ No remote server. No WebView. Python runs in-process, notebooks open instantly, 
 
 ---
 
-## V1 Features
+## What it can do
 
-- Create and open `.ipynb` files from device storage
-- **Code cells** — write Python, run it, see output inline below the cell
-- **Markdown cells** — write Markdown, render it in place
-- **pip install** — install packages on-device without leaving the app
-- Auto-save on background, explicit save button
+- Create new `.ipynb` notebooks (standard Jupyter nbformat 4 — opens in JupyterLab/VS Code)
+- Open existing `.ipynb` files from device storage via file picker
+- Keep a recent files list
+- **Code cells** — write Python, run it, see stdout/stderr inline below the cell
+- State persists across cells — define a variable in cell 1, use it in cell 2
+- **Markdown cells** — tap to edit, tap away to render (headings, bold, lists)
+- Run all cells in order with one tap
+- **pip install** packages on-device without leaving the app
+- Explicit save button + auto-save when the app backgrounds
+- Kernel crash recovery — auto-restarts Python and shows a notification
+
+## What it cannot do (yet)
+
+- **Rich outputs** — matplotlib plots, pandas DataFrames, images — only text stdout/stderr for now
+- **Kernel interrupt** — no way to stop a running cell mid-execution
+- **Reorder or delete cells** — cells can only be added at the bottom
+- **Syntax highlighting** in code cells
+- **Write back to original file** — files opened via picker are copied to cache; saves go to the cache copy, not back to the original location
+- **Export** — no PDF, HTML, or other formats
+- **Multiple kernels** — one shared Python state per app session
+
+---
+
+## Install on Android
+
+### Option A — Direct APK install (easiest)
+
+**1. Enable Unknown Sources on your phone**
+
+Settings → Security (or Apps) → enable **Install unknown apps** for your browser or Files app.
+
+**2. Enable USB Debugging**
+
+Settings → About phone → tap **Build Number** 7 times → Developer Options → enable **USB Debugging**.
+
+**3. Download the APK**
+
+Go to the [latest release](https://github.com/bandeiracaio/JupyterDroid/releases/latest) and download `app-debug.apk`.
+
+Or install via ADB from your Mac:
+
+```bash
+# Download
+curl -L https://github.com/bandeiracaio/JupyterDroid/releases/latest/download/app-debug.apk -o app-debug.apk
+
+# Connect phone via USB, then:
+adb install app-debug.apk
+```
+
+If `adb` is not on your PATH, use the full path: `~/android-sdk/platform-tools/adb`.
+
+**4. Verify ADB sees your phone**
+
+```bash
+adb devices
+```
+
+You should see your device listed as `device`. If it says `unauthorized`, unlock your phone and tap **Allow** on the USB debugging prompt.
+
+**5. Install**
+
+```bash
+adb install app-debug.apk
+```
+
+`Success` means the app is installed. Open **JupyterDroid** from your launcher.
+
+> **Note:** This is a debug build. Android may warn you it's from an unknown source — that's expected for a sideloaded APK.
+
+---
+
+### Option B — Build from source (Android Studio)
+
+Requires [Android Studio](https://developer.android.com/studio) (latest stable) and an Android device or emulator running Android 7.0+ (API 24).
+
+**1. Clone and open**
+
+```bash
+git clone https://github.com/bandeiracaio/JupyterDroid.git
+```
+
+File → Open → select the `JupyterDroid` folder → Open.
+
+**2. Sync Gradle**
+
+Android Studio will prompt "Gradle files have changed" — click **Sync Now**. This downloads Chaquopy and Python 3.11 (~30 MB).
+
+**3. Connect your device**
+
+- **Physical device:** enable Developer Options (Settings → About → tap Build Number 7 times), then enable USB Debugging. Connect via USB.
+- **Emulator:** Device Manager → Create Device → Pixel profile → API 24+ system image → Finish.
+
+**4. Run**
+
+Click the green **Run** button (▶) or press `Shift+F10`.
+
+> First build takes a few minutes — Chaquopy compiles Python for ARM. Subsequent builds are fast.
 
 ---
 
@@ -34,16 +126,6 @@ UI (RecyclerView of cells)
 KernelManager (Kotlin coroutines)
         ↓
 kernel_runner.py via Chaquopy (CPython in-process)
-```
-
-### Data model
-
-Notebooks are plain Kotlin data classes serialized to/from `.ipynb` JSON via `kotlinx.serialization`. Cells are a sealed class:
-
-```kotlin
-sealed class Cell
-data class CodeCell(val source: String, val outputs: List<String>, val executionCount: Int?) : Cell()
-data class MarkdownCell(val source: String) : Cell()
 ```
 
 ### Execution flow
@@ -73,7 +155,7 @@ app/src/main/
 │   └── util/
 │       └── NotebookFile.kt          # read/write .ipynb to storage
 └── python/
-    └── kernel_runner.py             # thin shim: starts ipykernel, exposes execute()
+    └── kernel_runner.py             # exec-based kernel, stdout/stderr capture
 ```
 
 ---
@@ -84,8 +166,8 @@ app/src/main/
 |---|---|
 | Language | Kotlin |
 | Min SDK | API 24 (Android 7.0) |
-| Python runtime | [Chaquopy](https://chaquo.com/chaquopy/) |
-| Jupyter kernel | `ipykernel` (installed via Chaquopy pip) |
+| Python runtime | [Chaquopy](https://chaquo.com/chaquopy/) 15.0.1 |
+| Python version | 3.11 |
 | JSON | `kotlinx.serialization` |
 | Markdown | [Markwon](https://github.com/noties/Markwon) |
 | Concurrency | Kotlin Coroutines |
@@ -105,21 +187,21 @@ app/src/main/
 
 ## Roadmap
 
-### V1 (current)
-- [x] Design spec
-- [ ] Project scaffold (Gradle + Chaquopy)
-- [ ] `.ipynb` read/write
-- [ ] Kernel integration
-- [ ] Code cell UI + execution
-- [ ] Markdown cell UI + rendering
-- [ ] pip install UI
-- [ ] Save / auto-save
+### V1 (current — `feat/v1-implementation`)
+- [x] Project scaffold (Gradle + Chaquopy)
+- [x] `.ipynb` read/write (standard nbformat 4)
+- [x] Kernel integration (exec-based, persistent globals)
+- [x] Code cell UI + execution
+- [x] Markdown cell UI + rendering
+- [x] pip install UI
+- [x] Save / auto-save
 
 ### V2 (planned)
 - Rich outputs: matplotlib plots, pandas tables, images
-- Kernel restart / interrupt controls
-- File browser
+- Kernel interrupt controls
+- Reorder / delete cells
 - Syntax highlighting in code cells
+- Write back to original file location
 
 ---
 
