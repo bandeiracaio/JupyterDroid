@@ -14,6 +14,7 @@ import com.jupyterdroid.model.NotebookJson
 import com.jupyterdroid.ui.NotebookAdapter
 import com.jupyterdroid.ui.PipInstallBottomSheet
 import com.jupyterdroid.util.NotebookFile
+import io.noties.markwon.Markwon
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -34,7 +35,7 @@ class NotebookActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_notebook)
 
-        km = KernelManager.getInstance(this)
+        km = KernelManager.getInstance()
 
         val cells: MutableList<Cell> = intent.getStringExtra(EXTRA_FILE_PATH)?.let { path ->
             currentFile = File(path)
@@ -48,7 +49,7 @@ class NotebookActivity : AppCompatActivity() {
             }
         } ?: mutableListOf()
 
-        adapter = NotebookAdapter(cells) { position -> runCell(position) }
+        adapter = NotebookAdapter(cells, { position -> runCell(position) }, Markwon.create(this))
 
         val recycler = findViewById<RecyclerView>(R.id.cellsRecyclerView)
         recycler.layoutManager = LinearLayoutManager(this)
@@ -104,8 +105,7 @@ class NotebookActivity : AppCompatActivity() {
         // Sequential: one coroutine, forEach in order — parallel would cause race conditions in Python globals
         lifecycleScope.launch {
             adapter.cells.indices.forEach { i ->
-                if (adapter.cells[i] is Cell.Code) {
-                    val cell = adapter.cells[i] as Cell.Code
+                (adapter.cells[i] as? Cell.Code)?.let { cell ->
                     val result = withContext(Dispatchers.IO) {
                         try { km.execute(cell.source) } catch (e: Exception) { null }
                     }

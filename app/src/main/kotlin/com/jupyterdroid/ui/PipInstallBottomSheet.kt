@@ -27,7 +27,7 @@ class PipInstallBottomSheet : BottomSheetDialogFragment() {
         val packageEdit = view.findViewById<EditText>(R.id.packageNameEdit)
         val outputText = view.findViewById<TextView>(R.id.pipOutputText)
         val installButton = view.findViewById<Button>(R.id.installButton)
-        val km = KernelManager.getInstance(requireContext())
+        val km = KernelManager.getInstance()
 
         installButton.setOnClickListener {
             val pkg = packageEdit.text.toString().trim()

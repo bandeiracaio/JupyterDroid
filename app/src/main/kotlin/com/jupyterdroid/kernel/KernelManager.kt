@@ -1,6 +1,5 @@
 package com.jupyterdroid.kernel
 
-import android.content.Context
 import com.chaquo.python.Python
 
 data class ExecutionResult(val output: String, val error: String, val executionCount: Int)
@@ -34,7 +33,7 @@ class KernelManager private constructor() {
     companion object {
         @Volatile private var instance: KernelManager? = null
 
-        fun getInstance(context: Context): KernelManager =
+        fun getInstance(): KernelManager =
             instance ?: synchronized(this) {
                 instance ?: KernelManager().also { instance = it }
             }

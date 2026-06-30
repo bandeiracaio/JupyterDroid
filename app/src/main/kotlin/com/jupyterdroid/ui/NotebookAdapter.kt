@@ -4,10 +4,12 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.jupyterdroid.kernel.ExecutionResult
 import com.jupyterdroid.model.Cell
+import io.noties.markwon.Markwon
 
 class NotebookAdapter(
     val cells: MutableList<Cell>,
-    private val onRunCell: (Int) -> Unit
+    private val onRunCell: (Int) -> Unit,
+    private val markwon: Markwon
 ) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
     companion object {
@@ -23,7 +25,7 @@ class NotebookAdapter(
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder =
         when (viewType) {
             TYPE_CODE -> CodeCellViewHolder.create(parent)
-            else -> MarkdownCellViewHolder.create(parent)
+            else -> MarkdownCellViewHolder.create(parent, markwon)
         }
 
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {

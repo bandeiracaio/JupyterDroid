@@ -29,11 +29,7 @@ class MarkdownCellViewHolder(view: View, private val markwon: Markwon) : Recycle
         }
 
         sourceEdit.setOnFocusChangeListener { _, hasFocus ->
-            if (!hasFocus) {
-                val src = sourceEdit.text.toString()
-                onSourceChanged(position, src)
-                render(src)
-            }
+            if (!hasFocus) render(sourceEdit.text.toString())
         }
 
         val watcher = object : TextWatcher {
@@ -56,10 +52,10 @@ class MarkdownCellViewHolder(view: View, private val markwon: Markwon) : Recycle
     }
 
     companion object {
-        fun create(parent: ViewGroup): MarkdownCellViewHolder {
+        fun create(parent: ViewGroup, markwon: Markwon): MarkdownCellViewHolder {
             val view = LayoutInflater.from(parent.context)
                 .inflate(R.layout.item_cell_markdown, parent, false)
-            return MarkdownCellViewHolder(view, Markwon.create(parent.context))
+            return MarkdownCellViewHolder(view, markwon)
         }
     }
 }

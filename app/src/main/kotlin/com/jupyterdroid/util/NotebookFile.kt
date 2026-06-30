@@ -51,9 +51,7 @@ object NotebookFile {
         )
         is Cell.Markdown -> NotebookCellJson(
             cellType = "markdown",
-            source = source.toNotebookLines(),
-            outputs = emptyList(),
-            executionCount = null
+            source = source.toNotebookLines()
         )
     }
 
