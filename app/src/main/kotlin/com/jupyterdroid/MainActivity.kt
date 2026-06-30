@@ -31,6 +31,7 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
+        copyBundledExamples()
         recentAdapter = RecentAdapter(loadRecent()) { path -> openNotebook(path) }
 
         val recycler = findViewById<RecyclerView>(R.id.recentFilesRecyclerView)
@@ -76,6 +77,18 @@ class MainActivity : AppCompatActivity() {
             .getStringSet(recentKey, emptySet())
             ?.sortedByDescending { File(it).lastModified() }
             ?: emptyList()
+
+    private fun copyBundledExamples() {
+        val prefs = getSharedPreferences(prefsName, Context.MODE_PRIVATE)
+        if (prefs.getBoolean("examples_copied", false)) return
+        try {
+            val dir = getExternalFilesDir(null) ?: filesDir
+            val dest = File(dir, "iris_analysis.ipynb")
+            assets.open("iris_analysis.ipynb").use { it.copyTo(dest.outputStream()) }
+            saveRecent(dest.absolutePath)
+            prefs.edit().putBoolean("examples_copied", true).apply()
+        } catch (_: Exception) {}
+    }
 
     private fun saveRecent(path: String) {
         val prefs = getSharedPreferences(prefsName, Context.MODE_PRIVATE)
