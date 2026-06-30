@@ -5,17 +5,36 @@ import androidx.recyclerview.widget.RecyclerView
 import com.jupyterdroid.kernel.ExecutionResult
 import com.jupyterdroid.model.Cell
 
-// ponytail: casts all cells to Cell.Code for now; Task 6 upgrades to multi-type adapter
 class NotebookAdapter(
     val cells: MutableList<Cell>,
     private val onRunCell: (Int) -> Unit
-) : RecyclerView.Adapter<CodeCellViewHolder>() {
+) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int) =
-        CodeCellViewHolder.create(parent)
+    companion object {
+        private const val TYPE_CODE = 0
+        private const val TYPE_MARKDOWN = 1
+    }
 
-    override fun onBindViewHolder(holder: CodeCellViewHolder, position: Int) {
-        holder.bind(cells[position] as Cell.Code, position, ::updateSource)
+    override fun getItemViewType(position: Int) = when (cells[position]) {
+        is Cell.Code -> TYPE_CODE
+        is Cell.Markdown -> TYPE_MARKDOWN
+    }
+
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder =
+        when (viewType) {
+            TYPE_CODE -> CodeCellViewHolder.create(parent)
+            else -> MarkdownCellViewHolder.create(parent)
+        }
+
+    override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
+        when (holder) {
+            is CodeCellViewHolder -> holder.bind(
+                cells[position] as Cell.Code, position, ::updateSource
+            )
+            is MarkdownCellViewHolder -> holder.bind(
+                cells[position] as Cell.Markdown, position, ::updateSource
+            )
+        }
     }
 
     override fun getItemCount() = cells.size
