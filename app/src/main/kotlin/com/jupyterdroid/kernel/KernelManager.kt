@@ -14,7 +14,7 @@ class KernelManager private constructor() {
         return ExecutionResult(
             output = result["output"].toString(),
             error = result["error"].toString(),
-            executionCount = result["execution_count"].toInt()
+            executionCount = result["execution_count"]!!.toInt()
         )
     }
 
@@ -23,7 +23,7 @@ class KernelManager private constructor() {
         return PipResult(
             stdout = result["stdout"].toString(),
             stderr = result["stderr"].toString(),
-            success = result["returncode"].toInt() == 0
+            success = result["returncode"]!!.toInt() == 0
         )
     }
 
