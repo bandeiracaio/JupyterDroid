@@ -15,6 +15,7 @@ import com.jupyterdroid.model.Cell
 import com.jupyterdroid.model.NotebookJson
 import com.jupyterdroid.ui.NotebookAdapter
 import com.jupyterdroid.ui.PipInstallBottomSheet
+import com.jupyterdroid.util.ErrorReporter
 import com.jupyterdroid.util.NotebookFile
 import io.noties.markwon.Markwon
 import kotlinx.coroutines.Dispatchers
@@ -49,7 +50,7 @@ class NotebookActivity : AppCompatActivity() {
                     notebookJson = json
                     loaded.toMutableList()
                 } catch (e: Exception) {
-                    Toast.makeText(this, "Failed to open: ${e.message}", Toast.LENGTH_LONG).show()
+                    showCopyableError("Open notebook", e)
                     mutableListOf()
                 }
             }
@@ -60,7 +61,7 @@ class NotebookActivity : AppCompatActivity() {
                     notebookJson = json
                     loaded.toMutableList()
                 } catch (e: Exception) {
-                    Toast.makeText(this, "Failed to open: ${e.message}", Toast.LENGTH_LONG).show()
+                    showCopyableError("Open notebook", e)
                     mutableListOf()
                 }
             }
@@ -108,11 +109,7 @@ class NotebookActivity : AppCompatActivity() {
                 } catch (e: Exception) {
                     km.reset()
                     withContext(Dispatchers.Main) {
-                        Snackbar.make(
-                            findViewById(R.id.cellsRecyclerView),
-                            "Kernel restarted",
-                            Snackbar.LENGTH_SHORT
-                        ).show()
+                        showCopyableError("Kernel crash", e, extra = cell.source)
                     }
                     null
                 }
@@ -135,13 +132,24 @@ class NotebookActivity : AppCompatActivity() {
         }
     }
 
+    private fun showCopyableError(action: String, throwable: Throwable, extra: String? = null) {
+        Snackbar.make(
+            findViewById(R.id.cellsRecyclerView),
+            action,
+            Snackbar.LENGTH_INDEFINITE
+        ).setAction("Copy details") {
+            ErrorReporter.copyFromThrowable(this, action, throwable, extra)
+            Toast.makeText(this, "Copied — paste to Claude", Toast.LENGTH_SHORT).show()
+        }.show()
+    }
+
     private fun save() {
         currentUri?.let { uri ->
             try {
                 NotebookFile.write(contentResolver, uri, notebookJson, adapter.cells)
                 Toast.makeText(this, "Saved", Toast.LENGTH_SHORT).show()
             } catch (e: Exception) {
-                Toast.makeText(this, "Save failed: ${e.message}", Toast.LENGTH_LONG).show()
+                showCopyableError("Save notebook", e)
             }
             return
         }
@@ -153,7 +161,7 @@ class NotebookActivity : AppCompatActivity() {
             NotebookFile.write(notebookJson, adapter.cells, file)
             Toast.makeText(this, "Saved", Toast.LENGTH_SHORT).show()
         } catch (e: Exception) {
-            Toast.makeText(this, "Save failed: ${e.message}", Toast.LENGTH_LONG).show()
+            showCopyableError("Save notebook", e)
         }
     }
 
