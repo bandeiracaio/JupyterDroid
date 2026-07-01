@@ -11,18 +11,18 @@ class KernelManager private constructor() {
     fun execute(source: String): ExecutionResult {
         val result = runner.callAttr("execute", source)
         return ExecutionResult(
-            output = result["output"].toString(),
-            error = result["error"].toString(),
-            executionCount = result["execution_count"]!!.toInt()
+            output = result.callAttr("__getitem__", "output").toString(),
+            error = result.callAttr("__getitem__", "error").toString(),
+            executionCount = result.callAttr("__getitem__", "execution_count").toInt()
         )
     }
 
     fun pipInstall(packageName: String): PipResult {
         val result = runner.callAttr("pip_install", packageName)
         return PipResult(
-            stdout = result["stdout"].toString(),
-            stderr = result["stderr"].toString(),
-            success = result["returncode"]!!.toInt() == 0
+            stdout = result.callAttr("__getitem__", "stdout").toString(),
+            stderr = result.callAttr("__getitem__", "stderr").toString(),
+            success = result.callAttr("__getitem__", "returncode").toInt() == 0
         )
     }
 
