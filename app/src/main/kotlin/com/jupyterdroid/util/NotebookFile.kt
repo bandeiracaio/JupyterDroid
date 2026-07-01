@@ -1,5 +1,7 @@
 package com.jupyterdroid.util
 
+import android.content.ContentResolver
+import android.net.Uri
 import com.jupyterdroid.model.Cell
 import com.jupyterdroid.model.CellOutputJson
 import com.jupyterdroid.model.NotebookCellJson
@@ -24,6 +26,15 @@ object NotebookFile {
 
     fun write(notebookJson: NotebookJson, cells: List<Cell>, file: File) {
         file.writeText(serialize(notebookJson, cells))
+    }
+
+    fun read(resolver: ContentResolver, uri: Uri): Pair<NotebookJson, List<Cell>> {
+        val text = resolver.openInputStream(uri)!!.use { it.reader().readText() }
+        return read(text)
+    }
+
+    fun write(resolver: ContentResolver, uri: Uri, notebookJson: NotebookJson, cells: List<Cell>) {
+        resolver.openOutputStream(uri, "wt")!!.use { it.write(serialize(notebookJson, cells).toByteArray()) }
     }
 
     fun serialize(notebookJson: NotebookJson, cells: List<Cell>): String {
