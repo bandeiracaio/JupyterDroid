@@ -11,9 +11,9 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
+import androidx.documentfile.provider.DocumentFile
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import java.io.File
 
 class MainActivity : AppCompatActivity() {
 
@@ -53,11 +53,11 @@ class MainActivity : AppCompatActivity() {
 
     private fun openFromUri(uri: Uri) {
         try {
-            val file = File(cacheDir, "opened_${System.currentTimeMillis()}.ipynb")
-            contentResolver.openInputStream(uri)!!.use { input ->
-                file.outputStream().use { input.copyTo(it) }
-            }
-            openNotebook(file.absolutePath)
+            contentResolver.takePersistableUriPermission(
+                uri,
+                Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION
+            )
+            openNotebook(uri.toString())
         } catch (e: Exception) {
             Toast.makeText(this, "Cannot open file: ${e.message}", Toast.LENGTH_LONG).show()
         }
@@ -65,23 +65,27 @@ class MainActivity : AppCompatActivity() {
 
     private fun openNotebook(path: String) {
         saveRecent(path)
-        startActivity(
-            Intent(this, NotebookActivity::class.java)
-                .putExtra(NotebookActivity.EXTRA_FILE_PATH, path)
-        )
+        val intent = Intent(this, NotebookActivity::class.java)
+        if (path.startsWith("content://")) {
+            intent.putExtra(NotebookActivity.EXTRA_URI, path)
+        } else {
+            intent.putExtra(NotebookActivity.EXTRA_FILE_PATH, path)
+        }
+        startActivity(intent)
     }
 
     private fun loadRecent(): List<String> =
         getSharedPreferences(prefsName, Context.MODE_PRIVATE)
-            .getStringSet(recentKey, emptySet())
-            ?.sortedByDescending { File(it).lastModified() }
+            .getString(recentKey, "")
+            ?.split("\n")
+            ?.filter { it.isNotBlank() }
             ?: emptyList()
 
     private fun saveRecent(path: String) {
         val prefs = getSharedPreferences(prefsName, Context.MODE_PRIVATE)
-        val set = prefs.getStringSet(recentKey, mutableSetOf())!!.toMutableSet()
-        set.add(path)
-        prefs.edit().putStringSet(recentKey, set).apply()
+        val existing = loadRecent().filter { it != path }
+        val updated = (listOf(path) + existing).take(20)
+        prefs.edit().putString(recentKey, updated.joinToString("\n")).apply()
     }
 
     inner class RecentAdapter(
@@ -98,7 +102,11 @@ class MainActivity : AppCompatActivity() {
 
         override fun onBindViewHolder(holder: VH, position: Int) {
             val path = paths[position]
-            holder.text.text = path.substringAfterLast("/")
+            holder.text.text = if (path.startsWith("content://")) {
+                DocumentFile.fromSingleUri(holder.itemView.context, Uri.parse(path))?.name ?: path
+            } else {
+                path.substringAfterLast("/")
+            }
             holder.itemView.setOnClickListener { onClick(path) }
         }
 
