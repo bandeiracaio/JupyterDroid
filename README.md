@@ -8,9 +8,15 @@ No remote server. No WebView. Python runs in-process, notebooks open instantly, 
 
 ## Philosophy
 
-- **Fast above all** — lean UI, in-process kernel, no unnecessary layers
-- **Real notebooks** — reads and writes standard `.ipynb` files compatible with JupyterLab and VS Code
-- **Native Android** — Kotlin + Chaquopy, not a web wrapper
+**JupyterDroid is Jupyter Notebook, mobile-native — no more, no less.**
+
+Not a companion app, not a lightweight viewer, not an IDE with notebook support bolted on: the goal is full parity with what a `.ipynb` file and a Python kernel can do, running natively on a phone, online or off.
+
+- **Real notebooks** — reads and writes standard `.ipynb` (nbformat 4), fully compatible with JupyterLab and VS Code. Never a proprietary format.
+- **Fast** — lean UI, in-process kernel, no unnecessary layers. Opening a notebook should feel instant, not like waiting for a server.
+- **Works anywhere** — no remote server, no WebView, no network dependency. A notebook you can open on a train.
+- **Native Android** — Kotlin + Chaquopy. Not a wrapped web app.
+- **No more than Jupyter** — if it's not something Jupyter Notebook does, it's out of scope. No proprietary extensions, no lock-in.
 
 ---
 
@@ -28,6 +34,8 @@ No remote server. No WebView. Python runs in-process, notebooks open instantly, 
 - Kernel crash recovery — auto-restarts Python and shows a notification
 
 ## What it cannot do (yet)
+
+Gaps toward full notebook parity — not permanent limitations.
 
 - **Rich outputs** — matplotlib plots, pandas DataFrames, images — only text stdout/stderr for now
 - **Kernel interrupt** — no way to stop a running cell mid-execution
@@ -196,7 +204,7 @@ app/src/main/
 - [x] pip install UI
 - [x] Save / auto-save
 
-### V2 (planned)
+### V2 (planned) — closing the gap toward full notebook parity
 - Rich outputs: matplotlib plots, pandas tables, images
 - Kernel interrupt controls
 - Reorder / delete cells
