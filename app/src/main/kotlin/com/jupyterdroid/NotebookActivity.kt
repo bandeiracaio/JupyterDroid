@@ -1,8 +1,10 @@
 package com.jupyterdroid
 
+import android.net.Uri
 import android.os.Bundle
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.documentfile.provider.DocumentFile
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -24,12 +26,14 @@ class NotebookActivity : AppCompatActivity() {
 
     companion object {
         const val EXTRA_FILE_PATH = "file_path"
+        const val EXTRA_URI = "uri"
     }
 
     private lateinit var adapter: NotebookAdapter
     private lateinit var km: KernelManager
     private var notebookJson: NotebookJson = NotebookJson()
     private var currentFile: File? = null
+    private var currentUri: Uri? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -37,17 +41,31 @@ class NotebookActivity : AppCompatActivity() {
 
         km = KernelManager.getInstance()
 
-        val cells: MutableList<Cell> = intent.getStringExtra(EXTRA_FILE_PATH)?.let { path ->
-            currentFile = File(path)
-            try {
-                val (json, loaded) = NotebookFile.read(currentFile!!)
-                notebookJson = json
-                loaded.toMutableList()
-            } catch (e: Exception) {
-                Toast.makeText(this, "Failed to open: ${e.message}", Toast.LENGTH_LONG).show()
-                mutableListOf()
+        val cells: MutableList<Cell> = when {
+            intent.hasExtra(EXTRA_URI) -> {
+                currentUri = Uri.parse(intent.getStringExtra(EXTRA_URI))
+                try {
+                    val (json, loaded) = NotebookFile.read(contentResolver, currentUri!!)
+                    notebookJson = json
+                    loaded.toMutableList()
+                } catch (e: Exception) {
+                    Toast.makeText(this, "Failed to open: ${e.message}", Toast.LENGTH_LONG).show()
+                    mutableListOf()
+                }
             }
-        } ?: mutableListOf()
+            intent.hasExtra(EXTRA_FILE_PATH) -> {
+                currentFile = File(intent.getStringExtra(EXTRA_FILE_PATH)!!)
+                try {
+                    val (json, loaded) = NotebookFile.read(currentFile!!)
+                    notebookJson = json
+                    loaded.toMutableList()
+                } catch (e: Exception) {
+                    Toast.makeText(this, "Failed to open: ${e.message}", Toast.LENGTH_LONG).show()
+                    mutableListOf()
+                }
+            }
+            else -> mutableListOf()
+        }
 
         adapter = NotebookAdapter(cells, { position -> runCell(position) }, Markwon.create(this))
 
@@ -76,7 +94,9 @@ class NotebookActivity : AppCompatActivity() {
             }
         }
 
-        title = currentFile?.name ?: "Untitled.ipynb"
+        title = currentFile?.name
+            ?: currentUri?.let { DocumentFile.fromSingleUri(this, it)?.name }
+            ?: "Untitled.ipynb"
     }
 
     private fun runCell(position: Int) {
@@ -116,6 +136,15 @@ class NotebookActivity : AppCompatActivity() {
     }
 
     private fun save() {
+        currentUri?.let { uri ->
+            try {
+                NotebookFile.write(contentResolver, uri, notebookJson, adapter.cells)
+                Toast.makeText(this, "Saved", Toast.LENGTH_SHORT).show()
+            } catch (e: Exception) {
+                Toast.makeText(this, "Save failed: ${e.message}", Toast.LENGTH_LONG).show()
+            }
+            return
+        }
         val file = currentFile ?: run {
             val dir = getExternalFilesDir(null) ?: filesDir
             File(dir, "notebook_${System.currentTimeMillis()}.ipynb").also { currentFile = it }
