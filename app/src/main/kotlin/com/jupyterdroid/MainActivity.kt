@@ -18,7 +18,7 @@ import androidx.recyclerview.widget.RecyclerView
 class MainActivity : AppCompatActivity() {
 
     private val prefsName = "jupyterdroid"
-    private val recentKey = "recent_notebooks"
+    private val recentKey = "recent_notebooks_v2"
     private lateinit var recentAdapter: RecentAdapter
 
     private val openFileLauncher = registerForActivityResult(
