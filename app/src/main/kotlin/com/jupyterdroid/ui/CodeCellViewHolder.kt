@@ -5,16 +5,20 @@ import android.text.TextWatcher
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Button
 import android.widget.EditText
 import android.widget.TextView
+import android.widget.Toast
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.RecyclerView
 import com.jupyterdroid.R
 import com.jupyterdroid.model.Cell
+import com.jupyterdroid.util.ErrorReporter
 
 class CodeCellViewHolder(view: View) : RecyclerView.ViewHolder(view) {
     val sourceEdit: EditText = view.findViewById(R.id.sourceEdit)
     val outputText: TextView = view.findViewById(R.id.outputText)
+    val copyErrorButton: Button = view.findViewById(R.id.copyErrorButton)
     private var watcher: TextWatcher? = null
 
     fun bind(cell: Cell.Code, position: Int, onSourceChanged: (Int, String) -> Unit) {
@@ -36,6 +40,11 @@ class CodeCellViewHolder(view: View) : RecyclerView.ViewHolder(view) {
                     ContextCompat.getColor(itemView.context, R.color.error_red)
                 )
                 outputText.text = cell.error
+                copyErrorButton.visibility = View.VISIBLE
+                copyErrorButton.setOnClickListener {
+                    ErrorReporter.copyFromText(itemView.context, "Cell execution", cell.error, extra = cell.source)
+                    Toast.makeText(itemView.context, "Copied — paste to Claude", Toast.LENGTH_SHORT).show()
+                }
             }
             cell.output.isNotEmpty() -> {
                 outputText.visibility = View.VISIBLE
@@ -43,8 +52,12 @@ class CodeCellViewHolder(view: View) : RecyclerView.ViewHolder(view) {
                     ContextCompat.getColor(itemView.context, android.R.color.black)
                 )
                 outputText.text = cell.output
+                copyErrorButton.visibility = View.GONE
             }
-            else -> outputText.visibility = View.GONE
+            else -> {
+                outputText.visibility = View.GONE
+                copyErrorButton.visibility = View.GONE
+            }
         }
     }
 
