@@ -5,4 +5,5 @@
     <color name="white">#FFFFFFFF</color>
     <color name="code_background">#F5F5F5</color>
     <color name="error_red">#D32F2F</color>
+    <color name="output_text">#000000</color>
 </resources>

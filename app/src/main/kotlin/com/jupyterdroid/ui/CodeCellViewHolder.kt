@@ -49,7 +49,7 @@ class CodeCellViewHolder(view: View) : RecyclerView.ViewHolder(view) {
             cell.output.isNotEmpty() -> {
                 outputText.visibility = View.VISIBLE
                 outputText.setTextColor(
-                    ContextCompat.getColor(itemView.context, android.R.color.black)
+                    ContextCompat.getColor(itemView.context, R.color.output_text)
                 )
                 outputText.text = cell.output
                 copyErrorButton.visibility = View.GONE
