@@ -14,6 +14,8 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.documentfile.provider.DocumentFile
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.google.android.material.snackbar.Snackbar
+import com.jupyterdroid.util.ErrorReporter
 
 class MainActivity : AppCompatActivity() {
 
@@ -59,7 +61,14 @@ class MainActivity : AppCompatActivity() {
             )
             openNotebook(uri.toString())
         } catch (e: Exception) {
-            Toast.makeText(this, "Cannot open file: ${e.message}", Toast.LENGTH_LONG).show()
+            Snackbar.make(
+                findViewById(R.id.recentFilesRecyclerView),
+                "Cannot open file",
+                Snackbar.LENGTH_INDEFINITE
+            ).setAction("Copy details") {
+                ErrorReporter.copyFromThrowable(this, "Open notebook", e)
+                Toast.makeText(this, "Copied — paste to Claude", Toast.LENGTH_SHORT).show()
+            }.show()
         }
     }
 
