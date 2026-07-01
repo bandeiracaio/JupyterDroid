@@ -1,10 +1,15 @@
 import sys
 import io
+import os
 import traceback
 import subprocess
 
 _execution_count = 0
 _globals = {}
+
+
+def data_path(filename):
+    return os.path.join(os.path.dirname(__file__), filename)
 
 
 def execute(source):

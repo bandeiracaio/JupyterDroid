@@ -40,4 +40,18 @@ class KernelManagerTest {
         assertEquals("42\n", result.output)
         assertEquals(2, result.executionCount)
     }
+
+    @Test
+    fun dataPathResolvesToBundledTitanicCsv() {
+        val result = km.execute(
+            """
+            import kernel_runner, csv
+            with open(kernel_runner.data_path("titanic.csv")) as f:
+                rows = list(csv.DictReader(f))
+            print(len(rows))
+            """.trimIndent()
+        )
+        assertEquals("891\n", result.output)
+        assertEquals("", result.error)
+    }
 }
