@@ -1,7 +1,6 @@
 package com.jupyterdroid
 
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import androidx.test.platform.app.InstrumentationRegistry
 import com.jupyterdroid.kernel.KernelManager
 import org.junit.Assert.*
 import org.junit.Before
@@ -15,9 +14,7 @@ class KernelManagerTest {
 
     @Before
     fun setup() {
-        km = KernelManager.getInstance(
-            InstrumentationRegistry.getInstrumentation().targetContext
-        )
+        km = KernelManager.getInstance()
         km.reset()
     }
 
