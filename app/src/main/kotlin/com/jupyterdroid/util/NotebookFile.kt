@@ -15,14 +15,20 @@ object NotebookFile {
         encodeDefaults = true
     }
 
-    fun read(file: File): Pair<NotebookJson, List<Cell>> {
-        val nb = json.decodeFromString<NotebookJson>(file.readText())
+    fun read(file: File): Pair<NotebookJson, List<Cell>> = read(file.readText())
+
+    fun read(text: String): Pair<NotebookJson, List<Cell>> {
+        val nb = json.decodeFromString<NotebookJson>(text)
         return Pair(nb, nb.cells.map { it.toCell() })
     }
 
     fun write(notebookJson: NotebookJson, cells: List<Cell>, file: File) {
+        file.writeText(serialize(notebookJson, cells))
+    }
+
+    fun serialize(notebookJson: NotebookJson, cells: List<Cell>): String {
         val updated = notebookJson.copy(cells = cells.map { it.toCellJson() })
-        file.writeText(json.encodeToString(updated))
+        return json.encodeToString(updated)
     }
 
     private fun NotebookCellJson.toCell(): Cell = when (cellType) {

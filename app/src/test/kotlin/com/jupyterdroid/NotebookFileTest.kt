@@ -40,4 +40,16 @@ class NotebookFileTest {
         val written = Json.parseToJsonElement(tmp.readText())
         assertEquals(original, written)
     }
+
+    @Test
+    fun `serialize and read(text) round trip through a string`() {
+        val fixture = File(javaClass.classLoader!!.getResource("fixture.ipynb")!!.file)
+        val (notebookJson, cells) = NotebookFile.read(fixture)
+
+        val text = NotebookFile.serialize(notebookJson, cells)
+        val (rereadJson, rereadCells) = NotebookFile.read(text)
+
+        assertEquals(notebookJson, rereadJson)
+        assertEquals(cells, rereadCells)
+    }
 }
