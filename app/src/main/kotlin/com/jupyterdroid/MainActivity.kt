@@ -16,6 +16,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.snackbar.Snackbar
 import com.jupyterdroid.util.ErrorReporter
+import java.io.File
 
 class MainActivity : AppCompatActivity() {
 
@@ -32,6 +33,8 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+
+        seedSampleNotebookIfNeeded()
 
         recentAdapter = RecentAdapter(loadRecent()) { path -> openNotebook(path) }
 
@@ -51,6 +54,24 @@ class MainActivity : AppCompatActivity() {
     override fun onResume() {
         super.onResume()
         recentAdapter.update(loadRecent())
+    }
+
+    private fun seedSampleNotebookIfNeeded() {
+        val prefs = getSharedPreferences(prefsName, Context.MODE_PRIVATE)
+        if (prefs.getBoolean("sample_notebook_seeded", false)) return
+
+        try {
+            val dir = getExternalFilesDir(null) ?: filesDir
+            val file = File(dir, "sample_titanic_analysis.ipynb")
+            assets.open("sample_titanic.ipynb").use { input ->
+                file.outputStream().use { output -> input.copyTo(output) }
+            }
+            saveRecent(file.absolutePath)
+        } catch (e: Exception) {
+            // Onboarding aid only — a failure here must not block startup or surface to the user.
+        } finally {
+            prefs.edit().putBoolean("sample_notebook_seeded", true).apply()
+        }
     }
 
     private fun openFromUri(uri: Uri) {
