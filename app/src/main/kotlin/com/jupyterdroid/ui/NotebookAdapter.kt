@@ -57,7 +57,14 @@ class NotebookAdapter(
     fun moveCell(from: Int, to: Int) {
         if (from == to || from !in cells.indices || to !in cells.indices) return
         cells.add(to, cells.removeAt(from))
-        notifyItemMoved(from, to)
+        // NOT notifyItemMoved: it repositions holders without rebinding, and a
+        // cell's view type can change under it (markdown <-> code), which leaves
+        // a mismatched holder and makes a cell visually vanish. notifyItemChanged
+        // rebinds each slot and recreates the holder when its view type changed,
+        // so both endpoints render correctly. For an adjacent swap (the ↑/↓
+        // buttons and each drag step) these two slots are all that move.
+        notifyItemChanged(from)
+        notifyItemChanged(to)
     }
 
     fun deleteCell(position: Int): Cell {
