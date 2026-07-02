@@ -90,8 +90,10 @@ class NotebookActivity : AppCompatActivity() {
                 viewHolder: RecyclerView.ViewHolder,
                 target: RecyclerView.ViewHolder
             ): Boolean {
-                adapter.moveCell(viewHolder.bindingAdapterPosition, target.bindingAdapterPosition)
-                return true
+                val from = viewHolder.bindingAdapterPosition
+                val to = target.bindingAdapterPosition
+                if (from == RecyclerView.NO_POSITION || to == RecyclerView.NO_POSITION) return false
+                return adapter.moveCellForDrag(from, to)
             }
 
             override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
@@ -134,7 +136,7 @@ class NotebookActivity : AppCompatActivity() {
     private lateinit var itemTouchHelper: ItemTouchHelper
 
     private fun deleteCellWithUndo(position: Int) {
-        val cell = adapter.deleteCell(position)
+        val cell = adapter.deleteCell(position) ?: return
         Snackbar.make(findViewById(R.id.cellsRecyclerView), "Cell deleted", Snackbar.LENGTH_LONG)
             .setAction("Undo") { adapter.restoreCell(position, cell) }
             .show()

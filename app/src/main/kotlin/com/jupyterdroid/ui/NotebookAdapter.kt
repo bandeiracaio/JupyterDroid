@@ -54,20 +54,33 @@ class NotebookAdapter(
         notifyItemInserted(cells.size - 1)
     }
 
-    fun moveCell(from: Int, to: Int) {
-        if (from == to || from !in cells.indices || to !in cells.indices) return
-        cells.add(to, cells.removeAt(from))
-        // NOT notifyItemMoved: it repositions holders without rebinding, and a
-        // cell's view type can change under it (markdown <-> code), which leaves
-        // a mismatched holder and makes a cell visually vanish. notifyItemChanged
-        // rebinds each slot and recreates the holder when its view type changed,
-        // so both endpoints render correctly. For an adjacent swap (the ↑/↓
-        // buttons and each drag step) these two slots are all that move.
+    // Two notify strategies: a drag (ItemTouchHelper.onMove) contractually needs
+    // notifyItemMoved — the framework tracks the dragged holder geometrically, and
+    // holders travel with their items, so view types stay consistent. A button-
+    // initiated move has no drag context; there notifyItemMoved does NOT rebind,
+    // and a cross-view-type swap (markdown↔code) leaves a stale holder that
+    // vanishes from layout — so the button path rebinds both slots instead.
+    fun moveCell(from: Int, to: Int): Boolean {
+        if (!moveInList(from, to)) return false
         notifyItemChanged(from)
         notifyItemChanged(to)
+        return true
     }
 
-    fun deleteCell(position: Int): Cell {
+    fun moveCellForDrag(from: Int, to: Int): Boolean {
+        if (!moveInList(from, to)) return false
+        notifyItemMoved(from, to)
+        return true
+    }
+
+    private fun moveInList(from: Int, to: Int): Boolean {
+        if (from == to || from !in cells.indices || to !in cells.indices) return false
+        cells.add(to, cells.removeAt(from))
+        return true
+    }
+
+    fun deleteCell(position: Int): Cell? {
+        if (position !in cells.indices) return null
         val cell = cells.removeAt(position)
         notifyItemRemoved(position)
         return cell

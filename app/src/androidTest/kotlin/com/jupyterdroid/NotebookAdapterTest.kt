@@ -25,7 +25,7 @@ class NotebookAdapterTest {
     @Test
     fun moveCellReordersList() {
         val cells = mutableListOf<Cell>(Cell.Code(source = "a"), Cell.Code(source = "b"), Cell.Code(source = "c"))
-        adapterFor(cells).moveCell(0, 2)
+        assertEquals(true, adapterFor(cells).moveCell(0, 2))
         assertEquals(listOf("b", "c", "a"), cells.map { (it as Cell.Code).source })
     }
 
@@ -33,23 +33,42 @@ class NotebookAdapterTest {
     fun moveCellOutOfBoundsIsNoOp() {
         val cells = mutableListOf<Cell>(Cell.Code(source = "a"))
         val adapter = adapterFor(cells)
-        adapter.moveCell(0, 1)
-        adapter.moveCell(-1, 0)
-        adapter.moveCell(0, 0)
+        assertEquals(false, adapter.moveCell(0, 1))
+        assertEquals(false, adapter.moveCell(-1, 0))
+        assertEquals(false, adapter.moveCell(0, 0))
         assertEquals(1, cells.size)
         assertEquals("a", (cells[0] as Cell.Code).source)
+    }
+
+    @Test
+    fun moveCellForDragReordersList() {
+        val cells = mutableListOf<Cell>(Cell.Code(source = "a"), Cell.Code(source = "b"), Cell.Code(source = "c"))
+        val adapter = adapterFor(cells)
+        assertEquals(true, adapter.moveCellForDrag(0, 2))
+        assertEquals(listOf("b", "c", "a"), cells.map { (it as Cell.Code).source })
+        assertEquals(false, adapter.moveCellForDrag(0, 0))
+        assertEquals(false, adapter.moveCellForDrag(-1, 0))
     }
 
     @Test
     fun deleteReturnsCellAndRestoreReinsertsIt() {
         val cells = mutableListOf<Cell>(Cell.Code(source = "a"), Cell.Markdown(source = "b"))
         val adapter = adapterFor(cells)
-        val removed = adapter.deleteCell(0)
+        val removed = adapter.deleteCell(0)!!
         assertEquals(1, cells.size)
         assertEquals("a", (removed as Cell.Code).source)
         adapter.restoreCell(0, removed)
         assertEquals(2, cells.size)
         assertSame(removed, cells[0])
+    }
+
+    @Test
+    fun deleteCellOutOfBoundsReturnsNull() {
+        val cells = mutableListOf<Cell>(Cell.Code(source = "a"))
+        val adapter = adapterFor(cells)
+        assertEquals(null, adapter.deleteCell(1))
+        assertEquals(null, adapter.deleteCell(-1))
+        assertEquals(1, cells.size)
     }
 
     @Test
@@ -71,7 +90,7 @@ class NotebookAdapterTest {
         val cell = Cell.Code(source = "x")
         val cells = mutableListOf<Cell>(cell)
         val adapter = adapterFor(cells)
-        adapter.deleteCell(0)
+        adapter.deleteCell(0)!!
         adapter.updateCellOutput(cell, ExecutionResult("out", "", 1)) // must not throw
         assertEquals(0, cells.size)
     }
@@ -80,7 +99,7 @@ class NotebookAdapterTest {
     fun restoreCellClampsOutOfRangePosition() {
         val cells = mutableListOf<Cell>(Cell.Code(source = "a"))
         val adapter = adapterFor(cells)
-        val removed = adapter.deleteCell(0)
+        val removed = adapter.deleteCell(0)!!
         adapter.restoreCell(5, removed) // stale position past list end — must not throw
         assertEquals(1, cells.size)
         assertSame(removed, cells[0])
