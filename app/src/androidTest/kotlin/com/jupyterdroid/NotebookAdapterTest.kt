@@ -75,4 +75,14 @@ class NotebookAdapterTest {
         adapter.updateCellOutput(cell, ExecutionResult("out", "", 1)) // must not throw
         assertEquals(0, cells.size)
     }
+
+    @Test
+    fun restoreCellClampsOutOfRangePosition() {
+        val cells = mutableListOf<Cell>(Cell.Code(source = "a"))
+        val adapter = adapterFor(cells)
+        val removed = adapter.deleteCell(0)
+        adapter.restoreCell(5, removed) // stale position past list end — must not throw
+        assertEquals(1, cells.size)
+        assertSame(removed, cells[0])
+    }
 }

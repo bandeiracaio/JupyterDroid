@@ -67,8 +67,11 @@ class NotebookAdapter(
     }
 
     fun restoreCell(position: Int, cell: Cell) {
-        cells.add(position, cell)
-        notifyItemInserted(position)
+        // ponytail: clamp, not full stale-position tracking — a shifted slot
+        // beats a crash when other cells were deleted during the Undo window
+        val pos = position.coerceIn(0, cells.size)
+        cells.add(pos, cell)
+        notifyItemInserted(pos)
     }
 
     // Identity (===), not equals: cells are data classes, so two cells with the
