@@ -32,6 +32,7 @@ Not a companion app, not a lightweight viewer, not an IDE with notebook support 
 - **pip install** packages on-device without leaving the app
 - Explicit save button + auto-save when the app backgrounds
 - Files opened via the picker save back to the original file (no cache copy)
+- Reorder cells (drag handle or ↑/↓ buttons) and delete cells (swipe or 🗑, with Undo)
 - Kernel crash recovery — auto-restarts Python and shows a notification
 
 ## What it cannot do (yet)
@@ -40,7 +41,6 @@ Gaps toward full notebook parity — not permanent limitations.
 
 - **Rich outputs** — matplotlib plots, pandas DataFrames, images — only text stdout/stderr for now
 - **Kernel interrupt** — no way to stop a running cell mid-execution
-- **Reorder or delete cells** — cells can only be added at the bottom
 - **Syntax highlighting** in code cells
 - **Export** — no PDF, HTML, or other formats
 - **Multiple kernels** — one shared Python state per app session
@@ -207,7 +207,6 @@ app/src/main/
 ### V2 (planned) — closing the gap toward full notebook parity
 - Rich outputs: matplotlib plots, pandas tables, images
 - Kernel interrupt controls
-- Reorder / delete cells
 - Syntax highlighting in code cells
 
 ---

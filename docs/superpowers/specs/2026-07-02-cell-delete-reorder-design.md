@@ -16,7 +16,7 @@ Cells in the notebook editor can be deleted and reordered — currently they can
 
 ## Adapter changes (`NotebookAdapter`)
 
-- `moveCell(from: Int, to: Int)` — reorder `cells`, `notifyItemMoved(from, to)`.
+- `moveCell(from: Int, to: Int)` (buttons) and `moveCellForDrag(from: Int, to: Int)` (ItemTouchHelper) — same list op, different notify strategies. Drag contractually needs `notifyItemMoved` (the framework tracks the dragged holder); button moves have no drag context, where `notifyItemMoved` doesn't rebind and a cross-view-type swap (markdown↔code) leaves a stale holder that vanishes from layout — so the button path rebinds both slots with `notifyItemChanged` instead. (Amended during implementation from a single `notifyItemMoved`, which had the vanish bug.)
 - `deleteCell(pos: Int): Cell` — remove from `cells`, `notifyItemRemoved(pos)`, return the removed cell.
 - `restoreCell(pos: Int, cell: Cell)` — reinsert, `notifyItemInserted(pos)` (Undo path).
 
