@@ -30,7 +30,7 @@
 
 No automated test — layout XML only; compile check verifies resource references.
 
-- [ ] **Step 1: Create `app/src/main/res/layout/cell_actions.xml`**
+- [x] **Step 1: Create `app/src/main/res/layout/cell_actions.xml`**
 
 ```xml
 <?xml version="1.0" encoding="utf-8"?>
@@ -82,7 +82,7 @@ No automated test — layout XML only; compile check verifies resource reference
 </LinearLayout>
 ```
 
-- [ ] **Step 2: Add the include to `item_cell_code.xml`**
+- [x] **Step 2: Add the include to `item_cell_code.xml`**
 
 Insert as the FIRST child of the root `LinearLayout` (before `sourceEdit`), so the actions sit above the code editor:
 
@@ -90,7 +90,7 @@ Insert as the FIRST child of the root `LinearLayout` (before `sourceEdit`), so t
     <include layout="@layout/cell_actions" />
 ```
 
-- [ ] **Step 3: Restructure `item_cell_markdown.xml` to fit the include**
+- [x] **Step 3: Restructure `item_cell_markdown.xml` to fit the include**
 
 The markdown item's root is a `FrameLayout` (overlapping edit/rendered views); wrap it in a vertical `LinearLayout` with the actions row on top. Replace the entire file with:
 
@@ -127,12 +127,12 @@ The markdown item's root is a `FrameLayout` (overlapping edit/rendered views); w
 </LinearLayout>
 ```
 
-- [ ] **Step 4: Compile check**
+- [x] **Step 4: Compile check**
 
 Run: `JAVA_HOME=~/jdk17/zulu-17.jdk/Contents/Home ./gradlew :app:compileDebugKotlin :app:processDebugResources`
 Expected: BUILD SUCCESSFUL.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add app/src/main/res/layout/cell_actions.xml app/src/main/res/layout/item_cell_code.xml app/src/main/res/layout/item_cell_markdown.xml
@@ -161,7 +161,7 @@ git commit -m "Add per-cell action row layout (move up/down, drag handle, delete
 
 The test is instrumented (adapter constructor needs a real `Markwon`, which needs a `Context`). `notifyItem*` calls are safe with no attached RecyclerView — the observable simply has no observers.
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 Create `app/src/androidTest/kotlin/com/jupyterdroid/NotebookAdapterTest.kt`:
 
@@ -246,14 +246,14 @@ class NotebookAdapterTest {
 }
 ```
 
-- [ ] **Step 2: Run test to verify it fails**
+- [x] **Step 2: Run test to verify it fails**
 
 Start the emulator if not running: `~/android-sdk/emulator/emulator -avd JupyterDroid_test -no-snapshot-save -no-audio -no-boot-anim &` and wait for boot.
 
 Run: `JAVA_HOME=~/jdk17/zulu-17.jdk/Contents/Home ./gradlew connectedDebugAndroidTest -Pandroid.testInstrumentationRunnerArguments.class=com.jupyterdroid.NotebookAdapterTest`
 Expected: FAIL — compile error (constructor has no `onDeleteRequested`/`onStartDrag` parameters; `moveCell` etc. unresolved).
 
-- [ ] **Step 3: Rewrite `NotebookAdapter.kt`**
+- [x] **Step 3: Rewrite `NotebookAdapter.kt`**
 
 Replace the full file with:
 
@@ -374,7 +374,7 @@ class NotebookAdapter(
 }
 ```
 
-- [ ] **Step 4: Switch `CodeCellViewHolder` to live positions**
+- [x] **Step 4: Switch `CodeCellViewHolder` to live positions**
 
 In `CodeCellViewHolder.kt`, replace the `bind` signature and watcher (currently lines 24–34):
 
@@ -397,7 +397,7 @@ In `CodeCellViewHolder.kt`, replace the `bind` signature and watcher (currently 
 
 (The rest of `bind` — the output/error `when` block — is unchanged.)
 
-- [ ] **Step 5: Switch `MarkdownCellViewHolder` to live positions**
+- [x] **Step 5: Switch `MarkdownCellViewHolder` to live positions**
 
 In `MarkdownCellViewHolder.kt`, replace the `bind` signature (line 20) and watcher (lines 35–39):
 
@@ -416,7 +416,7 @@ In `MarkdownCellViewHolder.kt`, replace the `bind` signature (line 20) and watch
         }
 ```
 
-- [ ] **Step 6: Fix `NotebookActivity` compile errors minimally**
+- [x] **Step 6: Fix `NotebookActivity` compile errors minimally**
 
 Task 3 does the real wiring; this step only keeps the project compiling so the adapter test can run. In `NotebookActivity.kt` `onCreate`, replace the adapter construction:
 
@@ -465,12 +465,12 @@ In `runAllCells`, replace the loop body:
 
 (`toList()` snapshots the run order; deletions mid-run become no-ops via the identity lookup.)
 
-- [ ] **Step 7: Run test to verify it passes**
+- [x] **Step 7: Run test to verify it passes**
 
 Run: `JAVA_HOME=~/jdk17/zulu-17.jdk/Contents/Home ./gradlew connectedDebugAndroidTest -Pandroid.testInstrumentationRunnerArguments.class=com.jupyterdroid.NotebookAdapterTest`
 Expected: PASS (5 tests).
 
-- [ ] **Step 8: Commit**
+- [x] **Step 8: Commit**
 
 ```bash
 git add app/src/main/kotlin/com/jupyterdroid/ui/NotebookAdapter.kt app/src/main/kotlin/com/jupyterdroid/ui/CodeCellViewHolder.kt app/src/main/kotlin/com/jupyterdroid/ui/MarkdownCellViewHolder.kt app/src/main/kotlin/com/jupyterdroid/NotebookActivity.kt app/src/androidTest/kotlin/com/jupyterdroid/NotebookAdapterTest.kt
@@ -489,7 +489,7 @@ git commit -m "NotebookAdapter: move/delete/restore cells, identity-based output
 
 No dedicated automated test — gesture wiring can't be driven without a UI-interaction test framework (not in this project); the underlying operations were tested in Task 2. Verified manually in Task 4.
 
-- [ ] **Step 1: Add imports**
+- [x] **Step 1: Add imports**
 
 ```kotlin
 import androidx.recyclerview.widget.ItemTouchHelper
@@ -501,7 +501,7 @@ Change the `itemTouchHelper` field declaration from Task 2's fully-qualified stu
     private lateinit var itemTouchHelper: ItemTouchHelper
 ```
 
-- [ ] **Step 2: Attach the ItemTouchHelper**
+- [x] **Step 2: Attach the ItemTouchHelper**
 
 In `onCreate`, after `recycler.adapter = adapter`:
 
@@ -531,7 +531,7 @@ In `onCreate`, after `recycler.adapter = adapter`:
         itemTouchHelper.attachToRecyclerView(recycler)
 ```
 
-- [ ] **Step 3: Fill in `deleteCellWithUndo`**
+- [x] **Step 3: Fill in `deleteCellWithUndo`**
 
 Replace the Task 2 stub:
 
@@ -544,12 +544,12 @@ Replace the Task 2 stub:
     }
 ```
 
-- [ ] **Step 4: Compile check**
+- [x] **Step 4: Compile check**
 
 Run: `JAVA_HOME=~/jdk17/zulu-17.jdk/Contents/Home ./gradlew :app:compileDebugKotlin`
 Expected: BUILD SUCCESSFUL.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add app/src/main/kotlin/com/jupyterdroid/NotebookActivity.kt
@@ -562,33 +562,33 @@ git commit -m "NotebookActivity: swipe-to-delete with Undo, handle-initiated dra
 
 **Files:** none (verification only)
 
-- [ ] **Step 1: Install**
+- [x] **Step 1: Install**
 
 Emulator running (`~/android-sdk/emulator/emulator -avd JupyterDroid_test ...` if needed), then:
 Run: `JAVA_HOME=~/jdk17/zulu-17.jdk/Contents/Home ./gradlew installDebug`
 Expected: BUILD SUCCESSFUL.
 
-- [ ] **Step 2: Buttons**
+- [x] **Step 2: Buttons**
 
 Open the sample Titanic notebook. Every cell (code and markdown) shows ↑ ↓ ⠿ 🗑. Tap ↓ on the first cell — it swaps with the second. Tap ↑ — it swaps back. ↑ on the first cell and ↓ on the last cell do nothing (no crash).
 
-- [ ] **Step 3: Delete + Undo**
+- [x] **Step 3: Delete + Undo**
 
 Tap 🗑 on a cell — it disappears, "Cell deleted" snackbar appears. Tap **Undo** — the cell returns in its old position with its content. Delete again and let the snackbar expire — cell stays gone.
 
-- [ ] **Step 4: Swipe**
+- [x] **Step 4: Swipe**
 
 Swipe a cell sideways (start from the action row or cell padding, not inside text) — same delete + Undo flow.
 
-- [ ] **Step 5: Drag**
+- [x] **Step 5: Drag**
 
 Touch and drag the ⠿ handle — the cell lifts and reorders as you drag. Verify a plain long-press inside a cell's text does NOT start a drag (text selection appears instead).
 
-- [ ] **Step 6: State integrity**
+- [x] **Step 6: State integrity**
 
 Run a code cell (e.g. `print("hi")` in the sample), then move it up — output stays with the cell. Move a cell, edit its text, save, reopen — order and edits persisted.
 
-- [ ] **Step 7: Report results**
+- [x] **Step 7: Report results**
 
 All pass → feature complete. Any failure → note the step and return to the relevant task.
 
