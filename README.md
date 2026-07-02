@@ -31,6 +31,7 @@ Not a companion app, not a lightweight viewer, not an IDE with notebook support 
 - Run all cells in order with one tap
 - **pip install** packages on-device without leaving the app
 - Explicit save button + auto-save when the app backgrounds
+- Files opened via the picker save back to the original file (no cache copy)
 - Kernel crash recovery — auto-restarts Python and shows a notification
 
 ## What it cannot do (yet)
@@ -41,7 +42,6 @@ Gaps toward full notebook parity — not permanent limitations.
 - **Kernel interrupt** — no way to stop a running cell mid-execution
 - **Reorder or delete cells** — cells can only be added at the bottom
 - **Syntax highlighting** in code cells
-- **Write back to original file** — files opened via picker are copied to cache; saves go to the cache copy, not back to the original location
 - **Export** — no PDF, HTML, or other formats
 - **Multiple kernels** — one shared Python state per app session
 
@@ -209,7 +209,6 @@ app/src/main/
 - Kernel interrupt controls
 - Reorder / delete cells
 - Syntax highlighting in code cells
-- Write back to original file location
 
 ---
 
