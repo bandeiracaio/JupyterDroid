@@ -68,7 +68,13 @@ class NotebookActivity : AppCompatActivity() {
             else -> mutableListOf()
         }
 
-        adapter = NotebookAdapter(cells, { position -> runCell(position) }, Markwon.create(this))
+        adapter = NotebookAdapter(
+            cells,
+            onRunCell = { position -> runCell(position) },
+            markwon = Markwon.create(this),
+            onDeleteRequested = { position -> deleteCellWithUndo(position) },
+            onStartDrag = { holder -> itemTouchHelper.startDrag(holder) }
+        )
 
         val recycler = findViewById<RecyclerView>(R.id.cellsRecyclerView)
         recycler.layoutManager = LinearLayoutManager(this)
@@ -100,6 +106,12 @@ class NotebookActivity : AppCompatActivity() {
             ?: "Untitled.ipynb"
     }
 
+    private lateinit var itemTouchHelper: androidx.recyclerview.widget.ItemTouchHelper
+
+    private fun deleteCellWithUndo(position: Int) {
+        // Wired fully in the ItemTouchHelper task
+    }
+
     private fun runCell(position: Int) {
         val cell = adapter.cells.getOrNull(position) as? Cell.Code ?: return
         lifecycleScope.launch {
@@ -114,19 +126,19 @@ class NotebookActivity : AppCompatActivity() {
                     null
                 }
             }
-            result?.let { adapter.updateCellOutput(position, it) }
+            result?.let { adapter.updateCellOutput(cell, it) }
         }
     }
 
     private fun runAllCells() {
         // Sequential: one coroutine, forEach in order — parallel would cause race conditions in Python globals
         lifecycleScope.launch {
-            adapter.cells.indices.forEach { i ->
-                (adapter.cells[i] as? Cell.Code)?.let { cell ->
+            adapter.cells.toList().forEach { c ->
+                (c as? Cell.Code)?.let { cell ->
                     val result = withContext(Dispatchers.IO) {
                         try { km.execute(cell.source) } catch (e: Exception) { null }
                     }
-                    result?.let { adapter.updateCellOutput(i, it) }
+                    result?.let { adapter.updateCellOutput(cell, it) }
                 }
             }
         }

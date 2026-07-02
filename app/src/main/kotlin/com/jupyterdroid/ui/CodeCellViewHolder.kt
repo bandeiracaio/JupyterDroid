@@ -21,13 +21,16 @@ class CodeCellViewHolder(view: View) : RecyclerView.ViewHolder(view) {
     val copyErrorButton: Button = view.findViewById(R.id.copyErrorButton)
     private var watcher: TextWatcher? = null
 
-    fun bind(cell: Cell.Code, position: Int, onSourceChanged: (Int, String) -> Unit) {
+    fun bind(cell: Cell.Code, onSourceChanged: (Int, String) -> Unit) {
         // Remove old watcher before setText to avoid feedback loop on rebind
         watcher?.let { sourceEdit.removeTextChangedListener(it) }
         sourceEdit.setText(cell.source)
 
         watcher = object : TextWatcher {
-            override fun afterTextChanged(s: Editable) = onSourceChanged(position, s.toString())
+            override fun afterTextChanged(s: Editable) {
+                val pos = bindingAdapterPosition
+                if (pos != RecyclerView.NO_POSITION) onSourceChanged(pos, s.toString())
+            }
             override fun beforeTextChanged(s: CharSequence, start: Int, count: Int, after: Int) {}
             override fun onTextChanged(s: CharSequence, start: Int, before: Int, count: Int) {}
         }
