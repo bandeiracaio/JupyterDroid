@@ -32,7 +32,7 @@
 
 This is a pure refactor (no behavior change) that Task 2's Uri functions will reuse, avoiding duplicated serialization logic between the File and Uri code paths.
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 Add to `app/src/test/kotlin/com/jupyterdroid/NotebookFileTest.kt` (inside the existing `NotebookFileTest` class, alongside the current two tests):
 
@@ -50,12 +50,12 @@ Add to `app/src/test/kotlin/com/jupyterdroid/NotebookFileTest.kt` (inside the ex
     }
 ```
 
-- [ ] **Step 2: Run test to verify it fails**
+- [x] **Step 2: Run test to verify it fails**
 
 Run: `./gradlew testDebugUnitTest --tests "com.jupyterdroid.NotebookFileTest"`
 Expected: FAIL — `serialize` and `read(text)` are unresolved references (compile error).
 
-- [ ] **Step 3: Refactor `NotebookFile.kt` to add the two functions**
+- [x] **Step 3: Refactor `NotebookFile.kt` to add the two functions**
 
 Replace the `read`/`write` section of `app/src/main/kotlin/com/jupyterdroid/util/NotebookFile.kt` (lines 18–26) with:
 
@@ -77,12 +77,12 @@ Replace the `read`/`write` section of `app/src/main/kotlin/com/jupyterdroid/util
     }
 ```
 
-- [ ] **Step 4: Run test to verify it passes**
+- [x] **Step 4: Run test to verify it passes**
 
 Run: `./gradlew testDebugUnitTest --tests "com.jupyterdroid.NotebookFileTest"`
 Expected: PASS (all three tests in the class, including the two pre-existing ones — this confirms the refactor didn't change File-based behavior).
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add app/src/main/kotlin/com/jupyterdroid/util/NotebookFile.kt app/src/test/kotlin/com/jupyterdroid/NotebookFileTest.kt
@@ -104,7 +104,7 @@ git commit -m "Extract serialize()/read(text) helpers in NotebookFile"
 
 This needs a real Android `ContentResolver`, so the test is instrumented (`androidTest`), not a JVM unit test. `Uri.fromFile(tempFile)` is used as the test double — `ContentResolver.openInputStream`/`openOutputStream` both handle `file://` scheme URIs directly (no content provider needed), so this exercises the exact code path production will use, just with a `file://` Uri instead of a `content://` one.
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 Create `app/src/androidTest/kotlin/com/jupyterdroid/NotebookFileUriTest.kt`:
 
@@ -161,12 +161,12 @@ class NotebookFileUriTest {
 }
 ```
 
-- [ ] **Step 2: Run test to verify it fails**
+- [x] **Step 2: Run test to verify it fails**
 
 Run: `./gradlew connectedDebugAndroidTest --tests "com.jupyterdroid.NotebookFileUriTest"` (requires a connected device/emulator)
 Expected: FAIL — compile error, `NotebookFile.read(resolver, uri)` / `NotebookFile.write(resolver, uri, ...)` unresolved.
 
-- [ ] **Step 3: Add the Uri-based functions**
+- [x] **Step 3: Add the Uri-based functions**
 
 Add to `app/src/main/kotlin/com/jupyterdroid/util/NotebookFile.kt`, top of file add imports:
 
@@ -188,12 +188,12 @@ Add these two functions inside the `NotebookFile` object, after the `write(noteb
     }
 ```
 
-- [ ] **Step 4: Run test to verify it passes**
+- [x] **Step 4: Run test to verify it passes**
 
 Run: `./gradlew connectedDebugAndroidTest --tests "com.jupyterdroid.NotebookFileUriTest"`
 Expected: PASS (both tests).
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add app/src/main/kotlin/com/jupyterdroid/util/NotebookFile.kt app/src/androidTest/kotlin/com/jupyterdroid/NotebookFileUriTest.kt
@@ -214,7 +214,7 @@ git commit -m "Add ContentResolver/Uri read-write to NotebookFile"
 
 No dedicated test for this task — `NotebookActivity`'s save/run flow is triggered through `BottomAppBar` menu clicks and there's no Espresso dependency in this project (only `androidx.test.ext:junit` + `androidx.test:runner`, no UI-interaction testing library). The underlying I/O was already verified in Task 2. This task is wiring, verified manually in Task 5.
 
-- [ ] **Step 1: Add the `androidx.documentfile` dependency**
+- [x] **Step 1: Add the `androidx.documentfile` dependency**
 
 In `app/build.gradle.kts`, in the `dependencies { ... }` block, add alongside the other `implementation(...)` lines:
 
@@ -222,12 +222,12 @@ In `app/build.gradle.kts`, in the `dependencies { ... }` block, add alongside th
     implementation("androidx.documentfile:documentfile:1.0.1")
 ```
 
-- [ ] **Step 2: Sync and confirm the build still compiles**
+- [x] **Step 2: Sync and confirm the build still compiles**
 
 Run: `./gradlew :app:compileDebugKotlin`
 Expected: BUILD SUCCESSFUL (no source changes yet — this just confirms the new dependency resolves).
 
-- [ ] **Step 3: Add `EXTRA_URI` and `currentUri` field**
+- [x] **Step 3: Add `EXTRA_URI` and `currentUri` field**
 
 In `app/src/main/kotlin/com/jupyterdroid/NotebookActivity.kt`, update the companion object and fields (around lines 25–32):
 
@@ -251,7 +251,7 @@ import android.net.Uri
 import androidx.documentfile.provider.DocumentFile
 ```
 
-- [ ] **Step 4: Route loading through the Uri path when `EXTRA_URI` is present**
+- [x] **Step 4: Route loading through the Uri path when `EXTRA_URI` is present**
 
 Replace the cell-loading block in `onCreate` (current lines 40–50) with:
 
@@ -283,7 +283,7 @@ Replace the cell-loading block in `onCreate` (current lines 40–50) with:
         }
 ```
 
-- [ ] **Step 5: Route saving through the Uri path when `currentUri` is set**
+- [x] **Step 5: Route saving through the Uri path when `currentUri` is set**
 
 Replace `save()` (current lines 118–129) with:
 
@@ -311,7 +311,7 @@ Replace `save()` (current lines 118–129) with:
     }
 ```
 
-- [ ] **Step 6: Use the DocumentFile display name for the title bar**
+- [x] **Step 6: Use the DocumentFile display name for the title bar**
 
 Replace the title line (current line 79, `title = currentFile?.name ?: "Untitled.ipynb"`) with:
 
@@ -321,12 +321,12 @@ Replace the title line (current line 79, `title = currentFile?.name ?: "Untitled
             ?: "Untitled.ipynb"
 ```
 
-- [ ] **Step 7: Build and confirm no compile errors**
+- [x] **Step 7: Build and confirm no compile errors**
 
 Run: `./gradlew :app:compileDebugKotlin`
 Expected: BUILD SUCCESSFUL
 
-- [ ] **Step 8: Commit**
+- [x] **Step 8: Commit**
 
 ```bash
 git add app/build.gradle.kts app/src/main/kotlin/com/jupyterdroid/NotebookActivity.kt
@@ -345,7 +345,7 @@ git commit -m "NotebookActivity: load/save via Uri for picker-opened notebooks"
 
 No dedicated automated test — this is SharedPreferences + Intent wiring plus a real SAF picker interaction, which can't be driven without Espresso/UiAutomator (not present in this project, and adding one for a single flow would be new test infra beyond this task's scope). Verified manually in Task 5.
 
-- [ ] **Step 1: Take persistable permission and skip the cache copy in `openFromUri`**
+- [x] **Step 1: Take persistable permission and skip the cache copy in `openFromUri`**
 
 Replace `openFromUri` (current lines 54–64) in `app/src/main/kotlin/com/jupyterdroid/MainActivity.kt` with:
 
@@ -363,7 +363,7 @@ Replace `openFromUri` (current lines 54–64) in `app/src/main/kotlin/com/jupyte
     }
 ```
 
-- [ ] **Step 2: Route `openNotebook` by scheme (Uri string vs. plain file path)**
+- [x] **Step 2: Route `openNotebook` by scheme (Uri string vs. plain file path)**
 
 Replace `openNotebook` (current lines 66–72) with:
 
@@ -380,7 +380,7 @@ Replace `openNotebook` (current lines 66–72) with:
     }
 ```
 
-- [ ] **Step 3: Fix `loadRecent`'s sort — `File(it).lastModified()` breaks for `content://` strings**
+- [x] **Step 3: Fix `loadRecent`'s sort — `File(it).lastModified()` breaks for `content://` strings**
 
 `loadRecent` currently sorts recents by `File(it).lastModified()` (current line 77), which returns `0` for a `content://` string (not a valid file path) rather than throwing — every Uri-backed entry would sort as "oldest". Since there's no reliable last-modified timestamp available for an arbitrary SAF Uri without an extra query per item, switch to insertion order instead: track recents as an ordered list (most-recent-first) rather than a `Set`.
 
@@ -404,7 +404,7 @@ Replace `loadRecent`/`saveRecent` (current lines 74–85) with:
 
 (`take(20)` caps the list — matches the existing implicit no-growth-bound-was-fine-because-Set-dedup behavior closely enough without unbounded growth; this is the smallest change that fixes the sort bug, not a scope expansion.)
 
-- [ ] **Step 4: Display names for `content://` entries in Recents**
+- [x] **Step 4: Display names for `content://` entries in Recents**
 
 Replace `RecentAdapter.onBindViewHolder` (current lines 99–103) with:
 
@@ -426,12 +426,12 @@ Add import at the top of the file:
 import androidx.documentfile.provider.DocumentFile
 ```
 
-- [ ] **Step 5: Build and confirm no compile errors**
+- [x] **Step 5: Build and confirm no compile errors**
 
 Run: `./gradlew :app:compileDebugKotlin`
 Expected: BUILD SUCCESSFUL
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add app/src/main/kotlin/com/jupyterdroid/MainActivity.kt
@@ -444,12 +444,12 @@ git commit -m "MainActivity: persist Uri permission, drop cache copy, fix Recent
 
 **Files:** none (verification only)
 
-- [ ] **Step 1: Build and install the debug APK**
+- [x] **Step 1: Build and install the debug APK**
 
 Run: `./gradlew installDebug`
 Expected: BUILD SUCCESSFUL, app installed on the connected device.
 
-- [ ] **Step 2: Create a test `.ipynb` file outside the app**
+- [x] **Step 2: Create a test `.ipynb` file outside the app**
 
 On the device (or via `adb push`), place a small notebook file somewhere visible to the file picker (e.g. `Downloads/manual_test.ipynb`) with content:
 
@@ -457,25 +457,25 @@ On the device (or via `adb push`), place a small notebook file somewhere visible
 {"nbformat": 4, "nbformat_minor": 5, "metadata": {}, "cells": []}
 ```
 
-- [ ] **Step 3: Open it via the picker, edit, save**
+- [x] **Step 3: Open it via the picker, edit, save**
 
 In the app: **Open Notebook** → pick `manual_test.ipynb` from Downloads → add a code cell with `print("write-back works")` → tap **Save**.
 Expected: "Saved" toast, no error.
 
-- [ ] **Step 4: Confirm the original file changed, not a cache copy**
+- [x] **Step 4: Confirm the original file changed, not a cache copy**
 
 Run: `adb shell run-as com.jupyterdroid ls cache/` — expected: no `opened_*.ipynb` files (the cache-copy step is gone).
 Then inspect `manual_test.ipynb` directly (e.g. `adb pull` it, or open it in another app) and confirm it now contains the `print("write-back works")` cell.
 
-- [ ] **Step 5: Confirm Recents reopen works and still writes back**
+- [x] **Step 5: Confirm Recents reopen works and still writes back**
 
 Force-close and reopen the app. Tap the `manual_test.ipynb` entry in Recents. Expected: it opens with the previously saved cell content, title bar shows `manual_test.ipynb`. Edit again, save, and re-confirm the change lands in the original file (repeat Step 4's check).
 
-- [ ] **Step 6: Confirm "New notebook" is unaffected**
+- [x] **Step 6: Confirm "New notebook" is unaffected**
 
 Tap **New Notebook**, add a cell, save. Expected: unchanged behavior — saves into the app's private external-files folder, no picker prompt, no crash.
 
-- [ ] **Step 7: Report results**
+- [x] **Step 7: Report results**
 
 If all checks pass, this feature is complete — no commit needed for this task (verification only). If any check fails, note which step and return to the relevant task above to fix before proceeding.
 
