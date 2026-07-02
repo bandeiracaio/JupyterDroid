@@ -6,6 +6,7 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.documentfile.provider.DocumentFile
 import androidx.lifecycle.lifecycleScope
+import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.bottomappbar.BottomAppBar
@@ -80,6 +81,30 @@ class NotebookActivity : AppCompatActivity() {
         recycler.layoutManager = LinearLayoutManager(this)
         recycler.adapter = adapter
 
+        itemTouchHelper = ItemTouchHelper(object : ItemTouchHelper.SimpleCallback(
+            ItemTouchHelper.UP or ItemTouchHelper.DOWN,
+            ItemTouchHelper.LEFT or ItemTouchHelper.RIGHT
+        ) {
+            override fun onMove(
+                recyclerView: RecyclerView,
+                viewHolder: RecyclerView.ViewHolder,
+                target: RecyclerView.ViewHolder
+            ): Boolean {
+                adapter.moveCell(viewHolder.bindingAdapterPosition, target.bindingAdapterPosition)
+                return true
+            }
+
+            override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
+                val pos = viewHolder.bindingAdapterPosition
+                if (pos != RecyclerView.NO_POSITION) deleteCellWithUndo(pos)
+            }
+
+            // Drag starts from the handle only — long-press inside a cell's
+            // EditText means text selection, not reorder.
+            override fun isLongPressDragEnabled() = false
+        })
+        itemTouchHelper.attachToRecyclerView(recycler)
+
         val bar = findViewById<BottomAppBar>(R.id.bottomAppBar)
         bar.setOnMenuItemClickListener { item ->
             when (item.itemId) {
@@ -106,10 +131,13 @@ class NotebookActivity : AppCompatActivity() {
             ?: "Untitled.ipynb"
     }
 
-    private lateinit var itemTouchHelper: androidx.recyclerview.widget.ItemTouchHelper
+    private lateinit var itemTouchHelper: ItemTouchHelper
 
     private fun deleteCellWithUndo(position: Int) {
-        // Wired fully in the ItemTouchHelper task
+        val cell = adapter.deleteCell(position)
+        Snackbar.make(findViewById(R.id.cellsRecyclerView), "Cell deleted", Snackbar.LENGTH_LONG)
+            .setAction("Undo") { adapter.restoreCell(position, cell) }
+            .show()
     }
 
     private fun runCell(position: Int) {
