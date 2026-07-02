@@ -5,6 +5,8 @@
     android:orientation="vertical"
     android:padding="4dp">
 
+    <include layout="@layout/cell_actions" />
+
     <EditText
         android:id="@+id/sourceEdit"
         android:layout_width="match_parent"
