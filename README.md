@@ -33,6 +33,7 @@ Not a companion app, not a lightweight viewer, not an IDE with notebook support 
 - Explicit save button + auto-save when the app backgrounds
 - Files opened via the picker save back to the original file (no cache copy)
 - Reorder cells (drag handle or ↑/↓ buttons) and delete cells (swipe or 🗑, with Undo)
+- Python syntax highlighting in code cells (keywords, strings, comments, numbers — live, light/dark themed)
 - Kernel crash recovery — auto-restarts Python and shows a notification
 
 ## What it cannot do (yet)
@@ -41,7 +42,6 @@ Gaps toward full notebook parity — not permanent limitations.
 
 - **Rich outputs** — matplotlib plots, pandas DataFrames, images — only text stdout/stderr for now
 - **Kernel interrupt** — no way to stop a running cell mid-execution
-- **Syntax highlighting** in code cells
 - **Export** — no PDF, HTML, or other formats
 - **Multiple kernels** — one shared Python state per app session
 
@@ -207,7 +207,7 @@ app/src/main/
 ### V2 (planned) — closing the gap toward full notebook parity
 - Rich outputs: matplotlib plots, pandas tables, images
 - Kernel interrupt controls
-- Syntax highlighting in code cells
+- [x] Syntax highlighting in code cells — shipped 2026-07-02
 
 ---
 
