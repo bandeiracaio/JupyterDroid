@@ -29,7 +29,7 @@
 - Consumes: nothing.
 - Produces: `PythonHighlighter.tokenize(text: String): List<Token>`, `enum class Kind { STRING, COMMENT, KEYWORD, NUMBER }`, `data class Token(val start: Int, val end: Int, val kind: Kind)` (end is exclusive). Task 2 adds `highlight()` and `Colors` to the same object.
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 Create `app/src/test/kotlin/com/jupyterdroid/PythonHighlighterTest.kt`:
 
@@ -112,7 +112,7 @@ class PythonHighlighterTest {
 }
 ```
 
-- [ ] **Step 2: Run test to verify it fails**
+- [x] **Step 2: Run test to verify it fails**
 
 ```bash
 export JAVA_HOME=/Users/bandeiracaio/jdk17/zulu-17.jdk/Contents/Home
@@ -121,7 +121,7 @@ export JAVA_HOME=/Users/bandeiracaio/jdk17/zulu-17.jdk/Contents/Home
 
 Expected: FAIL to compile — `unresolved reference: PythonHighlighter`.
 
-- [ ] **Step 3: Write the tokenizer**
+- [x] **Step 3: Write the tokenizer**
 
 Create `app/src/main/kotlin/com/jupyterdroid/ui/PythonHighlighter.kt`:
 
@@ -162,7 +162,7 @@ object PythonHighlighter {
 }
 ```
 
-- [ ] **Step 4: Run tests to verify they pass**
+- [x] **Step 4: Run tests to verify they pass**
 
 ```bash
 export JAVA_HOME=/Users/bandeiracaio/jdk17/zulu-17.jdk/Contents/Home
@@ -171,7 +171,7 @@ export JAVA_HOME=/Users/bandeiracaio/jdk17/zulu-17.jdk/Contents/Home
 
 Expected: `BUILD SUCCESSFUL`. If any assertion fails on exact offsets, recount the offsets in the test string before touching the regex — the test strings contain escapes.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add app/src/main/kotlin/com/jupyterdroid/ui/PythonHighlighter.kt app/src/test/kotlin/com/jupyterdroid/PythonHighlighterTest.kt
@@ -191,7 +191,7 @@ git commit -m "Add PythonHighlighter tokenizer with unit tests"
 - Consumes: `PythonHighlighter.tokenize`, `Kind`, `Token` from Task 1.
 - Produces: `PythonHighlighter.highlight(editable: Editable, colors: Colors)`, `data class Colors(val keyword: Int, val string: Int, val comment: Int, val number: Int)`.
 
-- [ ] **Step 1: Add color resources**
+- [x] **Step 1: Add color resources**
 
 In `app/src/main/res/values/colors.xml`, add inside `<resources>`:
 
@@ -211,7 +211,7 @@ In `app/src/main/res/values-night/colors.xml`, add inside `<resources>`:
     <color name="syntax_number">#B5CEA8</color>
 ```
 
-- [ ] **Step 2: Add highlight() to PythonHighlighter**
+- [x] **Step 2: Add highlight() to PythonHighlighter**
 
 Add imports at the top of `PythonHighlighter.kt`:
 
@@ -244,7 +244,7 @@ Add inside the object, below `tokenize`:
     }
 ```
 
-- [ ] **Step 3: Hook into CodeCellViewHolder**
+- [x] **Step 3: Hook into CodeCellViewHolder**
 
 In `CodeCellViewHolder.kt`, add two properties after `private var watcher: TextWatcher? = null` (line 22):
 
@@ -281,7 +281,7 @@ In `bind`, immediately after `sourceEdit.setText(cell.source)` (line 27), add:
 
 This colors the cell at load; the watcher handles every keystroke after.
 
-- [ ] **Step 4: Build**
+- [x] **Step 4: Build**
 
 ```bash
 export JAVA_HOME=/Users/bandeiracaio/jdk17/zulu-17.jdk/Contents/Home
@@ -290,7 +290,7 @@ export JAVA_HOME=/Users/bandeiracaio/jdk17/zulu-17.jdk/Contents/Home
 
 Expected: `BUILD SUCCESSFUL`.
 
-- [ ] **Step 5: Run all tests**
+- [x] **Step 5: Run all tests**
 
 ```bash
 export JAVA_HOME=/Users/bandeiracaio/jdk17/zulu-17.jdk/Contents/Home
@@ -299,7 +299,7 @@ export JAVA_HOME=/Users/bandeiracaio/jdk17/zulu-17.jdk/Contents/Home
 
 Expected: `BUILD SUCCESSFUL`.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add app/src/main/kotlin/com/jupyterdroid/ui/PythonHighlighter.kt app/src/main/kotlin/com/jupyterdroid/ui/CodeCellViewHolder.kt app/src/main/res/values/colors.xml app/src/main/res/values-night/colors.xml
@@ -312,23 +312,23 @@ git commit -m "Wire syntax highlighting into code cells"
 
 **Files:** none — install `app/build/outputs/apk/debug/app-debug.apk` on a device/emulator.
 
-- [ ] **Step 1: Load coloring**
+- [x] **Step 1: Load coloring**
 
 Open the sample Titanic notebook. Code cells show colored keywords (purple/violet), strings (green), comments (gray), numbers (blue) immediately, before any edit.
 
-- [ ] **Step 2: Live coloring**
+- [x] **Step 2: Live coloring**
 
 Type `if x == "hi":  # test 42` into a cell. `if` colors as keyword while typing; the string, comment, and `42` color correctly. `if` inside the string/comment does NOT color as keyword.
 
-- [ ] **Step 3: Editing integrity**
+- [x] **Step 3: Editing integrity**
 
 Type, delete, and paste multi-line code — no crashes, no color "smearing" onto newly typed plain text after a colored token (SPAN_EXCLUSIVE_EXCLUSIVE should prevent it). Cursor and text selection behave normally.
 
-- [ ] **Step 4: Dark mode**
+- [x] **Step 4: Dark mode**
 
 Toggle system dark mode, reopen the notebook — dark-variant colors show, readable on the dark code background.
 
-- [ ] **Step 5: Persistence sanity**
+- [x] **Step 5: Persistence sanity**
 
 Edit a cell, save, reopen — text intact (spans must never leak into the saved `.ipynb` source; `s.toString()` strips them by construction).
 
