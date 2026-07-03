@@ -18,15 +18,8 @@ data class NotebookCellJson(
     @SerialName("cell_type") val cellType: String,
     val source: List<String> = emptyList(),
     val metadata: JsonObject = JsonObject(emptyMap()),
-    val outputs: List<CellOutputJson> = emptyList(),
+    val outputs: List<JsonObject> = emptyList(),
     @SerialName("execution_count") val executionCount: Int? = null
-)
-
-@Serializable
-data class CellOutputJson(
-    @SerialName("output_type") val outputType: String = "stream",
-    val name: String = "stdout",
-    val text: List<String> = emptyList()
 )
 
 private fun defaultMetadata(): JsonObject = JsonObject(

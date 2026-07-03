@@ -3,11 +3,16 @@ package com.jupyterdroid.util
 import android.content.ContentResolver
 import android.net.Uri
 import com.jupyterdroid.model.Cell
-import com.jupyterdroid.model.CellOutputJson
 import com.jupyterdroid.model.NotebookCellJson
 import com.jupyterdroid.model.NotebookJson
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonArray
+import kotlinx.serialization.json.JsonElement
+import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.JsonPrimitive
+import kotlinx.serialization.json.jsonObject
+import kotlinx.serialization.json.jsonPrimitive
 import java.io.File
 
 object NotebookFile {
@@ -45,13 +50,31 @@ object NotebookFile {
     private fun NotebookCellJson.toCell(): Cell = when (cellType) {
         "code" -> Cell.Code(
             source = source.joinToString(""),
-            output = outputs.filter { it.outputType == "stream" && it.name == "stdout" }
-                .flatMap { it.text }.joinToString(""),
-            error = outputs.filter { it.outputType == "stream" && it.name == "stderr" }
-                .flatMap { it.text }.joinToString(""),
-            executionCount = executionCount
+            output = outputs.filter { it.outputType == "stream" && it.streamName == "stdout" }
+                .flatMap { it["text"].asLines() }.joinToString(""),
+            error = outputs.filter { it.outputType == "stream" && it.streamName == "stderr" }
+                .flatMap { it["text"].asLines() }.joinToString(""),
+            executionCount = executionCount,
+            images = outputs
+                .filter { it.outputType == "display_data" || it.outputType == "execute_result" }
+                .mapNotNull { out ->
+                    out["data"]?.jsonObject?.get("image/png")?.asLines()
+                        ?.joinToString("")?.replace("\n", "")?.takeIf { it.isNotEmpty() }
+                }
         )
         else -> Cell.Markdown(source = source.joinToString(""))
+    }
+
+    private val JsonObject.outputType: String?
+        get() = this["output_type"]?.jsonPrimitive?.content
+    private val JsonObject.streamName: String?
+        get() = this["name"]?.jsonPrimitive?.content
+
+    // nbformat allows "text"/"image/png" as either a string or a list of lines.
+    private fun JsonElement?.asLines(): List<String> = when (this) {
+        is JsonArray -> map { it.jsonPrimitive.content }
+        is JsonPrimitive -> listOf(content)
+        else -> emptyList()
     }
 
     private fun Cell.toCellJson(): NotebookCellJson = when (this) {
@@ -59,10 +82,9 @@ object NotebookFile {
             cellType = "code",
             source = source.toNotebookLines(),
             outputs = buildList {
-                if (output.isNotEmpty())
-                    add(CellOutputJson(name = "stdout", text = output.toNotebookLines()))
-                if (error.isNotEmpty())
-                    add(CellOutputJson(name = "stderr", text = error.toNotebookLines()))
+                if (output.isNotEmpty()) add(streamOutput("stdout", output))
+                if (error.isNotEmpty()) add(streamOutput("stderr", error))
+                images.forEach { add(imageOutput(it)) }
             },
             executionCount = executionCount
         )
@@ -71,6 +93,22 @@ object NotebookFile {
             source = source.toNotebookLines()
         )
     }
+
+    private fun streamOutput(name: String, text: String) = JsonObject(
+        mapOf(
+            "output_type" to JsonPrimitive("stream"),
+            "name" to JsonPrimitive(name),
+            "text" to JsonArray(text.toNotebookLines().map { JsonPrimitive(it) })
+        )
+    )
+
+    private fun imageOutput(b64: String) = JsonObject(
+        mapOf(
+            "output_type" to JsonPrimitive("display_data"),
+            "data" to JsonObject(mapOf("image/png" to JsonPrimitive(b64 + "\n"))),
+            "metadata" to JsonObject(emptyMap())
+        )
+    )
 
     // .ipynb format: each line ends with \n except the last.
     // filter removes the trailing empty string produced by split when input ends with \n.
