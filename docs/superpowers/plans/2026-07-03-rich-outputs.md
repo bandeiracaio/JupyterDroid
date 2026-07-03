@@ -30,7 +30,7 @@
 - Consumes: existing `execute()`/`_globals` and its interrupt guards.
 - Produces: `execute()` result dict gains `"images": [<base64 png str>, ...]` (always present, `[]` when no figures). Echo text is appended to `"output"` after stdout. Task 2 reads `"images"` through Chaquopy.
 
-- [ ] **Step 1: Write the failing tests**
+- [x] **Step 1: Write the failing tests**
 
 Append to `app/src/test/python/test_kernel_runner.py` (before the final `print("ALL PASS")` line; keep everything already there):
 
@@ -75,12 +75,12 @@ print("ALL PASS")
 
 Delete the old final `print("ALL PASS")` so it appears exactly once, at the end.
 
-- [ ] **Step 2: Run tests to verify they fail**
+- [x] **Step 2: Run tests to verify they fail**
 
 Run: `python3 app/src/test/python/test_kernel_runner.py`
 Expected: FAIL — `KeyError: 'images'` (or the `"2\n"` echo assertion, whichever hits first).
 
-- [ ] **Step 3: Implement echo + sweep**
+- [x] **Step 3: Implement echo + sweep**
 
 In `app/src/main/python/kernel_runner.py`:
 
@@ -169,12 +169,12 @@ In the outer `except BaseException:` return dict (the stale-interrupt path), add
         }
 ```
 
-- [ ] **Step 4: Run tests to verify they pass**
+- [x] **Step 4: Run tests to verify they pass**
 
 Run: `python3 app/src/test/python/test_kernel_runner.py`
 Expected: `ALL PASS`
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add app/src/main/python/kernel_runner.py app/src/test/python/test_kernel_runner.py
@@ -196,7 +196,7 @@ git commit -m "kernel_runner: last-expression echo and matplotlib figure sweep"
 - Consumes: `execute()` result dict key `"images"` (list of base64 PNG strings) from Task 1.
 - Produces: `Cell.Code.images: List<String>` (default `emptyList()`) and `ExecutionResult.images: List<String>` — Task 3's persistence reads/writes `Cell.Code.images`.
 
-- [ ] **Step 1: Extend the model**
+- [x] **Step 1: Extend the model**
 
 In `Cell.kt`, add `images` to `Cell.Code`:
 
@@ -244,7 +244,7 @@ In `NotebookAdapter.kt`, `updateCellOutput`'s copy gains the images:
         )
 ```
 
-- [ ] **Step 2: Add the image container to the layout**
+- [x] **Step 2: Add the image container to the layout**
 
 In `item_cell_code.xml`, insert between the `outputText` TextView and the `copyErrorButton` Button:
 
@@ -257,7 +257,7 @@ In `item_cell_code.xml`, insert between the `outputText` TextView and the `copyE
         android:visibility="gone" />
 ```
 
-- [ ] **Step 3: Bind images in CodeCellViewHolder**
+- [x] **Step 3: Bind images in CodeCellViewHolder**
 
 In `CodeCellViewHolder.kt`, add imports:
 
@@ -304,7 +304,7 @@ In `bind`, after the existing output/error `when` block, add:
         }
 ```
 
-- [ ] **Step 4: Build and run unit tests**
+- [x] **Step 4: Build and run unit tests**
 
 ```bash
 export JAVA_HOME=/Users/bandeiracaio/jdk17/zulu-17.jdk/Contents/Home
@@ -313,7 +313,7 @@ export JAVA_HOME=/Users/bandeiracaio/jdk17/zulu-17.jdk/Contents/Home
 
 Expected: `BUILD SUCCESSFUL`.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add app/src/main/kotlin/com/jupyterdroid/model/Cell.kt app/src/main/kotlin/com/jupyterdroid/kernel/KernelManager.kt app/src/main/kotlin/com/jupyterdroid/ui/NotebookAdapter.kt app/src/main/kotlin/com/jupyterdroid/ui/CodeCellViewHolder.kt app/src/main/res/layout/item_cell_code.xml
@@ -333,7 +333,7 @@ git commit -m "Carry image outputs through model and render them in code cells"
 - Consumes: `Cell.Code.images: List<String>` from Task 2.
 - Produces: `.ipynb` round-trip — write `{"output_type":"display_data","data":{"image/png":"<b64>\n"},"metadata":{}}` per image; read `image/png` from `display_data` AND `execute_result` outputs (string or list-of-lines form) into `Cell.Code.images`. `NotebookCellJson.outputs: List<JsonObject>`.
 
-- [ ] **Step 1: Write the failing tests**
+- [x] **Step 1: Write the failing tests**
 
 Add to `NotebookFileTest.kt` (note: `NotebookFile.read(text: String)` and `NotebookFile.serialize(...)` already exist):
 
@@ -372,7 +372,7 @@ Add to `NotebookFileTest.kt` (note: `NotebookFile.read(text: String)` and `Noteb
     }
 ```
 
-- [ ] **Step 2: Run tests to verify they fail**
+- [x] **Step 2: Run tests to verify they fail**
 
 ```bash
 export JAVA_HOME=/Users/bandeiracaio/jdk17/zulu-17.jdk/Contents/Home
@@ -381,7 +381,7 @@ export JAVA_HOME=/Users/bandeiracaio/jdk17/zulu-17.jdk/Contents/Home
 
 Expected: FAIL to compile (`images` unresolved in test context is already resolved by Task 2, so the failures are the new assertions / missing serializer behavior — e.g. `serialized.contains("display_data")` assertion fails).
 
-- [ ] **Step 3: Switch outputs to JsonObject and implement read/write**
+- [x] **Step 3: Switch outputs to JsonObject and implement read/write**
 
 In `NotebookJson.kt`: change the `outputs` type and delete the now-unused `CellOutputJson` class entirely.
 
@@ -482,7 +482,7 @@ grep -rn "CellOutputJson" app/src
 
 Expected after the change: no hits. (If a test file references it, rewrite that assertion against the JSON string instead.)
 
-- [ ] **Step 4: Run all unit tests**
+- [x] **Step 4: Run all unit tests**
 
 ```bash
 export JAVA_HOME=/Users/bandeiracaio/jdk17/zulu-17.jdk/Contents/Home
@@ -491,7 +491,7 @@ export JAVA_HOME=/Users/bandeiracaio/jdk17/zulu-17.jdk/Contents/Home
 
 Expected: `BUILD SUCCESSFUL` — new tests pass AND the pre-existing fixture round-trip tests still pass (stream read/write behavior must be unchanged).
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add app/src/main/kotlin/com/jupyterdroid/model/NotebookJson.kt app/src/main/kotlin/com/jupyterdroid/util/NotebookFile.kt app/src/test/kotlin/com/jupyterdroid/NotebookFileTest.kt
@@ -504,15 +504,15 @@ git commit -m "Persist image outputs as nbformat display_data"
 
 **Files:** none — `./gradlew installDebug` (emulator `JupyterDroid_test`; adb at `/Users/bandeiracaio/android-sdk/platform-tools/adb`).
 
-- [ ] **Step 1: Echo**
+- [x] **Step 1: Echo**
 
 New notebook. Cell `1 + 1` → Run shows `2`. Cell `x = 5` → Run shows nothing. Cell `print("a")` then bare `3` on next line → shows `a` then `3`.
 
-- [ ] **Step 2: Install matplotlib**
+- [x] **Step 2: Install matplotlib**
 
 pip menu → install `matplotlib` (large download; wait for success toast/output).
 
-- [ ] **Step 3: Plot renders**
+- [x] **Step 3: Plot renders**
 
 Cell:
 ```python
@@ -522,7 +522,7 @@ plt.title("hi")
 ```
 Run → a line plot image appears under the cell. No `plt.show()` needed.
 
-- [ ] **Step 4: Two figures**
+- [x] **Step 4: Two figures**
 
 Cell:
 ```python
@@ -531,11 +531,11 @@ plt.figure(); plt.plot([2, 1])
 ```
 Run → two images, first ascending then descending.
 
-- [ ] **Step 5: Persistence**
+- [x] **Step 5: Persistence**
 
 Save. Reopen the notebook → plot images still display. (If a desktop is handy: the file opens in JupyterLab/VS Code with the images visible — optional check.)
 
-- [ ] **Step 6: Error path**
+- [x] **Step 6: Error path**
 
 Cell `plt.plot([1,2]); 1/0` → shows ZeroDivisionError traceback; the next cell run does NOT show the leftover figure (sweep-on-error closed it).
 
