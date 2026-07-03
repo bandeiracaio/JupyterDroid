@@ -30,7 +30,7 @@
 - Consumes: existing `execute(source)` / module globals in `kernel_runner.py`.
 - Produces: `interrupt() -> bool` (True if something was running and an interrupt was sent, False if idle). `execute()` now catches `BaseException`, so an interrupted cell returns normally with `"KeyboardInterrupt"` in `result["error"]`. Task 2 calls `interrupt()` through Chaquopy.
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 Create `app/src/test/python/test_kernel_runner.py`:
 
@@ -69,12 +69,12 @@ assert kernel_runner.interrupt() is False
 print("ALL PASS")
 ```
 
-- [ ] **Step 2: Run test to verify it fails**
+- [x] **Step 2: Run test to verify it fails**
 
 Run: `python3 app/src/test/python/test_kernel_runner.py`
 Expected: FAIL with `AttributeError: module 'kernel_runner' has no attribute 'interrupt'`
 
-- [ ] **Step 3: Implement interrupt in kernel_runner.py**
+- [x] **Step 3: Implement interrupt in kernel_runner.py**
 
 In `app/src/main/python/kernel_runner.py`, add to the imports at the top:
 
@@ -133,12 +133,12 @@ def interrupt():
     return True
 ```
 
-- [ ] **Step 4: Run test to verify it passes**
+- [x] **Step 4: Run test to verify it passes**
 
 Run: `python3 app/src/test/python/test_kernel_runner.py`
 Expected: `ALL PASS`
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add app/src/main/python/kernel_runner.py app/src/test/python/test_kernel_runner.py
@@ -157,7 +157,7 @@ git commit -m "kernel_runner: interruptible execute via PyThreadState_SetAsyncEx
 - Consumes: `kernel_runner.interrupt() -> bool` from Task 1.
 - Produces: `KernelManager.interrupt(): Boolean`; `NotebookActivity` state `isRunning`/`stopRequested` and helper `setRunning(running: Boolean)`.
 
-- [ ] **Step 1: Add KernelManager.interrupt**
+- [x] **Step 1: Add KernelManager.interrupt**
 
 In `KernelManager.kt`, add below `execute`:
 
@@ -165,7 +165,7 @@ In `KernelManager.kt`, add below `execute`:
     fun interrupt(): Boolean = runner.callAttr("interrupt").toBoolean()
 ```
 
-- [ ] **Step 2: Add running state to NotebookActivity**
+- [x] **Step 2: Add running state to NotebookActivity**
 
 In `NotebookActivity.kt`, add `import android.view.MenuItem` to the imports (if not present). Add fields near the other `private var`s:
 
@@ -184,7 +184,7 @@ Add this helper next to `runCell`:
     }
 ```
 
-- [ ] **Step 3: Wire the BottomAppBar menu**
+- [x] **Step 3: Wire the BottomAppBar menu**
 
 In `onCreate`, the menu listener currently reads (around `NotebookActivity.kt:110-129`):
 
@@ -227,7 +227,7 @@ Change those two branches to (and add the `runMenuItem` line after the listener 
         runMenuItem = bar.menu.findItem(R.id.action_run_cell)
 ```
 
-- [ ] **Step 4: Flip state in runCell and runAllCells**
+- [x] **Step 4: Flip state in runCell and runAllCells**
 
 Replace `runCell` with:
 
@@ -275,7 +275,7 @@ Replace `runAllCells` with:
     }
 ```
 
-- [ ] **Step 5: Build and run unit tests**
+- [x] **Step 5: Build and run unit tests**
 
 ```bash
 export JAVA_HOME=/Users/bandeiracaio/jdk17/zulu-17.jdk/Contents/Home
@@ -284,7 +284,7 @@ export JAVA_HOME=/Users/bandeiracaio/jdk17/zulu-17.jdk/Contents/Home
 
 Expected: `BUILD SUCCESSFUL`.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add app/src/main/kotlin/com/jupyterdroid/kernel/KernelManager.kt app/src/main/kotlin/com/jupyterdroid/NotebookActivity.kt
@@ -297,23 +297,23 @@ git commit -m "Toolbar Run/Stop: interrupt running cell, stop run-all loop"
 
 **Files:** none — install with `./gradlew installDebug` (emulator `JupyterDroid_test`; adb at `/Users/bandeiracaio/android-sdk/platform-tools/adb`).
 
-- [ ] **Step 1: Interrupt an infinite loop**
+- [x] **Step 1: Interrupt an infinite loop**
 
 New notebook, code cell `while True: pass`, tap Run (toolbar shows "Stop" while running), tap Stop. Cell shows a red `KeyboardInterrupt` traceback; app stays responsive.
 
-- [ ] **Step 2: Kernel survives**
+- [x] **Step 2: Kernel survives**
 
 Cell `x = 1` → Run; cell `while True: pass` → Run → Stop; cell `print(x)` → Run prints `1`. Globals intact, kernel alive.
 
-- [ ] **Step 3: Blocking C call ceiling**
+- [x] **Step 3: Blocking C call ceiling**
 
 Cell `import time; time.sleep(15)` → Run → Stop immediately. The cell keeps running until the sleep ends, then shows `KeyboardInterrupt`. (Documents the ceiling; expected behavior.)
 
-- [ ] **Step 4: Run All stops**
+- [x] **Step 4: Run All stops**
 
 Cells: `print("a")`, `while True: pass`, `print("c")`. Run All → Stop during the loop. Cell 2 shows `KeyboardInterrupt`; cell 3 shows no new output (never ran). Toolbar returns to "Run".
 
-- [ ] **Step 5: Stop while idle**
+- [x] **Step 5: Stop while idle**
 
 With nothing running the item reads "Run"; tapping it runs the focused cell as before. No crash paths.
 
