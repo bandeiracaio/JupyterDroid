@@ -44,7 +44,10 @@ chaquopy {
         pip {
             // matplotlib has native code; on-device pip can't install it, so it
             // ships in the APK (pulls in numpy too).
-            install("matplotlib")
+            // Pinned: 3.6.0 is the newest Chaquopy prebuilt wheel for Python 3.11;
+            // fonttools pinned because buildPython 3.9 can't resolve newer releases.
+            install("matplotlib==3.6.0")
+            install("fonttools==4.51.0")
         }
     }
 }
