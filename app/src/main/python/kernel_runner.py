@@ -3,9 +3,12 @@ import io
 import os
 import traceback
 import subprocess
+import ctypes
+import threading
 
 _execution_count = 0
 _globals = {}
+_exec_thread_id = None
 
 
 def data_path(filename):
@@ -13,8 +16,9 @@ def data_path(filename):
 
 
 def execute(source):
-    global _execution_count, _globals
+    global _execution_count, _globals, _exec_thread_id
     _execution_count += 1
+    _exec_thread_id = threading.get_ident()
 
     stdout_buf = io.StringIO()
     stderr_buf = io.StringIO()
@@ -24,9 +28,10 @@ def execute(source):
     error = ""
     try:
         exec(compile(source, "<cell>", "exec"), _globals)
-    except Exception:
+    except BaseException:  # BaseException so KeyboardInterrupt lands here, not in the bridge
         error = traceback.format_exc()
     finally:
+        _exec_thread_id = None
         sys.stdout, sys.stderr = old_out, old_err
 
     return {
@@ -34,6 +39,18 @@ def execute(source):
         "error": error,
         "execution_count": _execution_count,
     }
+
+
+def interrupt():
+    # ponytail: PyThreadState_SetAsyncExc delivers between Python bytecodes.
+    # A blocking C call (time.sleep, native pandas op) only sees it on return.
+    # Kernel reset remains the hard stop.
+    tid = _exec_thread_id
+    if tid is None:
+        return False
+    ctypes.pythonapi.PyThreadState_SetAsyncExc(
+        ctypes.c_ulong(tid), ctypes.py_object(KeyboardInterrupt))
+    return True
 
 
 def pip_install(package):
