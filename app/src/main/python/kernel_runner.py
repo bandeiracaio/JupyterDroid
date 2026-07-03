@@ -23,28 +23,45 @@ def execute(source):
     stdout_buf = io.StringIO()
     stderr_buf = io.StringIO()
     old_out, old_err = sys.stdout, sys.stderr
-    sys.stdout, sys.stderr = stdout_buf, stderr_buf
 
-    error = ""
     try:
-        exec(compile(source, "<cell>", "exec"), _globals)
-    except BaseException:  # BaseException so KeyboardInterrupt lands here, not in the bridge
-        error = traceback.format_exc()
+        sys.stdout, sys.stderr = stdout_buf, stderr_buf
+        error = ""
+        try:
+            exec(compile(source, "<cell>", "exec"), _globals)
+        except BaseException:  # BaseException so KeyboardInterrupt lands here, not in the bridge
+            error = traceback.format_exc()
+        return {
+            "output": stdout_buf.getvalue(),
+            "error": error,
+            "execution_count": _execution_count,
+        }
+    except BaseException:
+        # A stale interrupt delivered here (after the inner try, before we return)
+        # still needs to come back as a normal result, not escape to the bridge.
+        return {
+            "output": stdout_buf.getvalue(),
+            "error": traceback.format_exc(),
+            "execution_count": _execution_count,
+        }
     finally:
-        _exec_thread_id = None
         sys.stdout, sys.stderr = old_out, old_err
-
-    return {
-        "output": stdout_buf.getvalue(),
-        "error": error,
-        "execution_count": _execution_count,
-    }
+        _exec_thread_id = None
+        # ponytail: NULL cancels any async exc still queued on this (reused) pool
+        # thread so it can't fire during the next execute() on this same thread.
+        ctypes.pythonapi.PyThreadState_SetAsyncExc(
+            ctypes.c_ulong(threading.get_ident()), None)
 
 
 def interrupt():
     # ponytail: PyThreadState_SetAsyncExc delivers between Python bytecodes.
     # A blocking C call (time.sleep, native pandas op) only sees it on return.
     # Kernel reset remains the hard stop.
+    # Residual race: tid is read, then the cell can finish and the pool thread
+    # go idle, before the injection call below runs. execute()'s finally drains
+    # any such stale async exc so it can't leak into the NEXT execute() on that
+    # thread — but a few bytecodes between the drain and returning to Java are
+    # still exposed if a new execute() starts in that exact window.
     tid = _exec_thread_id
     if tid is None:
         return False

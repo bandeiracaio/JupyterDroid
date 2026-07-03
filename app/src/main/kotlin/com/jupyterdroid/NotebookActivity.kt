@@ -117,7 +117,7 @@ class NotebookActivity : AppCompatActivity() {
                 R.id.action_run_cell -> {
                     if (isRunning) {
                         stopRequested = true
-                        km.interrupt()
+                        lifecycleScope.launch(Dispatchers.IO) { km.interrupt() }
                     } else {
                         val pos = (recycler.layoutManager as LinearLayoutManager)
                             .findLastVisibleItemPosition()

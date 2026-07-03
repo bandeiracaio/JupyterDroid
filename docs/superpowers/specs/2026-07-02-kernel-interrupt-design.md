@@ -78,4 +78,4 @@ Python/device behavior, so emulator verification:
 ## Risks
 
 - Async exception delivery is at bytecode granularity — covered above.
-- `PyThreadState_SetAsyncExc` with a stale/finished thread id: guarded by clearing `_exec_thread_id` in `finally`; worst case the call targets no live thread and affects nothing.
+- `PyThreadState_SetAsyncExc` with a stale/finished thread id: cell threads come from a reused `Dispatchers.IO` pool, so a stale injection does NOT land on a dead thread — it queues on a live, idle pool thread and fires at the start of its next `execute()`. Guarded by draining any pending async exc in `execute()`'s `finally` (`PyThreadState_SetAsyncExc(tid, None)`, which cancels a queued-but-undelivered exception) plus wrapping the whole `execute()` body in `except BaseException` so a late delivery still returns a normal error dict instead of escaping to the bridge. A few-bytecode residual window between the drain and returning control to Java remains.

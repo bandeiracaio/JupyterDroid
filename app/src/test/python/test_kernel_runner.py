@@ -29,4 +29,32 @@ assert r["output"].strip() == "42"
 # 4. Thread id cleared after execute: a second idle interrupt is False again.
 assert kernel_runner.interrupt() is False
 
+# 5. Stale-tid race: hammer interrupt() concurrently with fast execute() calls
+# on a reused worker thread. No result may error, and no exception may escape
+# execute() itself; a final clean execute afterwards must be unaffected.
+results = []
+
+
+def racer():
+    for _ in range(200):
+        results.append(kernel_runner.execute("pass"))
+
+
+t2 = threading.Thread(target=racer)
+t2.start()
+for _ in range(200):
+    kernel_runner.interrupt()
+t2.join(5)
+assert not t2.is_alive(), "racer thread did not finish within 5s"
+assert len(results) == 200
+for r in results:
+    assert isinstance(r, dict), "execute() must always return a dict, never raise"
+    assert "KeyboardInterrupt" not in r["error"], r["error"]
+
+clean = kernel_runner.execute("y = 2")
+assert clean["error"] == "", clean["error"]
+final = kernel_runner.execute("print(y)")
+assert final["error"] == "", final["error"]
+assert final["output"].strip() == "2"
+
 print("ALL PASS")
