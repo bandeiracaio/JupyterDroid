@@ -26,6 +26,8 @@ Not a companion app, not a lightweight viewer, not an IDE with notebook support 
 - Open existing `.ipynb` files from device storage via file picker
 - Keep a recent files list
 - **Code cells** — write Python, run it, see stdout/stderr inline below the cell
+- **Matplotlib plots** render as images in the cell (bundled matplotlib; saved into the `.ipynb`)
+- **Expression echo** — a bare expression on the last line prints its value, like Jupyter (so `df` shows the DataFrame)
 - State persists across cells — define a variable in cell 1, use it in cell 2
 - **Markdown cells** — tap to edit, tap away to render (headings, bold, lists)
 - Run all cells in order with one tap
@@ -41,7 +43,7 @@ Not a companion app, not a lightweight viewer, not an IDE with notebook support 
 
 Gaps toward full notebook parity — not permanent limitations.
 
-- **Rich outputs** — matplotlib plots, pandas DataFrames, images — only text stdout/stderr for now
+- **Rich HTML outputs** — pandas DataFrames render as monospace text (via expression echo), not styled HTML tables
 - **Export** — no PDF, HTML, or other formats
 - **Multiple kernels** — one shared Python state per app session
 
@@ -204,8 +206,8 @@ app/src/main/
 - [x] pip install UI
 - [x] Save / auto-save
 
-### V2 (planned) — closing the gap toward full notebook parity
-- Rich outputs: matplotlib plots, pandas tables, images
+### V2 — closing the gap toward full notebook parity
+- [x] Matplotlib plots + expression echo — shipped 2026-07-03
 - [x] Kernel interrupt controls — shipped 2026-07-03
 - [x] Syntax highlighting in code cells — shipped 2026-07-02
 
