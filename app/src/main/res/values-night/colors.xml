@@ -2,4 +2,8 @@
     <color name="code_background">#2B2B2B</color>
     <color name="error_red">#CF6679</color>
     <color name="output_text">#FFFFFF</color>
+    <color name="syntax_keyword">#C586C0</color>
+    <color name="syntax_string">#6A9955</color>
+    <color name="syntax_comment">#808080</color>
+    <color name="syntax_number">#B5CEA8</color>
 </resources>

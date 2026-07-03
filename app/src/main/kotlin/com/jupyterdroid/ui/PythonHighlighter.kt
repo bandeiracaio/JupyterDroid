@@ -1,5 +1,9 @@
 package com.jupyterdroid.ui
 
+import android.text.Editable
+import android.text.Spanned
+import android.text.style.ForegroundColorSpan
+
 object PythonHighlighter {
 
     enum class Kind { STRING, COMMENT, KEYWORD, NUMBER }
@@ -31,4 +35,23 @@ object PythonHighlighter {
             }
             Token(m.range.first, m.range.last + 1, kind)
         }.toList()
+
+    data class Colors(val keyword: Int, val string: Int, val comment: Int, val number: Int)
+
+    // Marker subclass so we only ever remove our own spans.
+    private class HighlightSpan(color: Int) : ForegroundColorSpan(color)
+
+    fun highlight(editable: Editable, colors: Colors) {
+        editable.getSpans(0, editable.length, HighlightSpan::class.java)
+            .forEach(editable::removeSpan)
+        for (t in tokenize(editable.toString())) {
+            val color = when (t.kind) {
+                Kind.STRING -> colors.string
+                Kind.COMMENT -> colors.comment
+                Kind.KEYWORD -> colors.keyword
+                Kind.NUMBER -> colors.number
+            }
+            editable.setSpan(HighlightSpan(color), t.start, t.end, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+        }
+    }
 }

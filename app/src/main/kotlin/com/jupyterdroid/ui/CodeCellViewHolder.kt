@@ -20,14 +20,26 @@ class CodeCellViewHolder(view: View) : RecyclerView.ViewHolder(view) {
     val outputText: TextView = view.findViewById(R.id.outputText)
     val copyErrorButton: Button = view.findViewById(R.id.copyErrorButton)
     private var watcher: TextWatcher? = null
+    private val syntaxColors = PythonHighlighter.Colors(
+        keyword = ContextCompat.getColor(view.context, R.color.syntax_keyword),
+        string = ContextCompat.getColor(view.context, R.color.syntax_string),
+        comment = ContextCompat.getColor(view.context, R.color.syntax_comment),
+        number = ContextCompat.getColor(view.context, R.color.syntax_number),
+    )
+    private var highlighting = false
 
     fun bind(cell: Cell.Code, onSourceChanged: (Int, String) -> Unit) {
         // Remove old watcher before setText to avoid feedback loop on rebind
         watcher?.let { sourceEdit.removeTextChangedListener(it) }
         sourceEdit.setText(cell.source)
+        PythonHighlighter.highlight(sourceEdit.text, syntaxColors)
 
         watcher = object : TextWatcher {
             override fun afterTextChanged(s: Editable) {
+                if (highlighting) return
+                highlighting = true
+                PythonHighlighter.highlight(s, syntaxColors)
+                highlighting = false
                 val pos = bindingAdapterPosition
                 if (pos != RecyclerView.NO_POSITION) onSourceChanged(pos, s.toString())
             }
