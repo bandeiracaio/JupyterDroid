@@ -2,6 +2,7 @@ package com.jupyterdroid
 
 import android.net.Uri
 import android.os.Bundle
+import android.view.MenuItem
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.documentfile.provider.DocumentFile
@@ -36,6 +37,9 @@ class NotebookActivity : AppCompatActivity() {
     private var notebookJson: NotebookJson = NotebookJson()
     private var currentFile: File? = null
     private var currentUri: Uri? = null
+    private var runMenuItem: MenuItem? = null
+    private var isRunning = false
+    private var stopRequested = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -111,12 +115,17 @@ class NotebookActivity : AppCompatActivity() {
         bar.setOnMenuItemClickListener { item ->
             when (item.itemId) {
                 R.id.action_run_cell -> {
-                    val pos = (recycler.layoutManager as LinearLayoutManager)
-                        .findLastVisibleItemPosition()
-                    if (pos >= 0) runCell(pos)
+                    if (isRunning) {
+                        stopRequested = true
+                        km.interrupt()
+                    } else {
+                        val pos = (recycler.layoutManager as LinearLayoutManager)
+                            .findLastVisibleItemPosition()
+                        if (pos >= 0) runCell(pos)
+                    }
                     true
                 }
-                R.id.action_run_all -> { runAllCells(); true }
+                R.id.action_run_all -> { if (!isRunning) runAllCells(); true }
                 R.id.action_add_code -> { adapter.addCodeCell(); true }
                 R.id.action_add_md -> { adapter.addMarkdownCell(); true }
                 R.id.action_pip -> {
@@ -127,6 +136,7 @@ class NotebookActivity : AppCompatActivity() {
                 else -> false
             }
         }
+        runMenuItem = bar.menu.findItem(R.id.action_run_cell)
 
         title = currentFile?.name
             ?: currentUri?.let { DocumentFile.fromSingleUri(this, it)?.name }
@@ -142,8 +152,15 @@ class NotebookActivity : AppCompatActivity() {
             .show()
     }
 
+    private fun setRunning(running: Boolean) {
+        isRunning = running
+        runMenuItem?.title = if (running) "Stop" else "Run"
+    }
+
     private fun runCell(position: Int) {
         val cell = adapter.cells.getOrNull(position) as? Cell.Code ?: return
+        stopRequested = false
+        setRunning(true)
         lifecycleScope.launch {
             val result = withContext(Dispatchers.IO) {
                 try {
@@ -156,21 +173,25 @@ class NotebookActivity : AppCompatActivity() {
                     null
                 }
             }
+            setRunning(false)
             result?.let { adapter.updateCellOutput(cell, it) }
         }
     }
 
     private fun runAllCells() {
-        // Sequential: one coroutine, forEach in order — parallel would cause race conditions in Python globals
+        // Sequential: one coroutine, in order — parallel would cause race conditions in Python globals
+        stopRequested = false
+        setRunning(true)
         lifecycleScope.launch {
-            adapter.cells.toList().forEach { c ->
-                (c as? Cell.Code)?.let { cell ->
-                    val result = withContext(Dispatchers.IO) {
-                        try { km.execute(cell.source) } catch (e: Exception) { null }
-                    }
-                    result?.let { adapter.updateCellOutput(cell, it) }
+            for (c in adapter.cells.toList()) {
+                if (stopRequested) break  // interrupt killed the current cell; don't start the next
+                val cell = c as? Cell.Code ?: continue
+                val result = withContext(Dispatchers.IO) {
+                    try { km.execute(cell.source) } catch (e: Exception) { null }
                 }
+                result?.let { adapter.updateCellOutput(cell, it) }
             }
+            setRunning(false)
         }
     }
 

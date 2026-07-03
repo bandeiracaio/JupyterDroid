@@ -17,6 +17,8 @@ class KernelManager private constructor() {
         )
     }
 
+    fun interrupt(): Boolean = runner.callAttr("interrupt").toBoolean()
+
     fun pipInstall(packageName: String): PipResult {
         val result = runner.callAttr("pip_install", packageName)
         return PipResult(
