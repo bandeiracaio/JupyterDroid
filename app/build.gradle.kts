@@ -41,6 +41,11 @@ android {
 chaquopy {
     defaultConfig {
         version = "3.11"
+        pip {
+            // matplotlib has native code; on-device pip can't install it, so it
+            // ships in the APK (pulls in numpy too).
+            install("matplotlib")
+        }
     }
 }
 

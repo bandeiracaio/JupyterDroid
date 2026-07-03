@@ -87,6 +87,6 @@ Echo of `None` shows nothing (Jupyter behavior). Images persist across save/reop
 
 ## Risks
 
-- matplotlib install size/time on device — user-initiated via existing pip UI; not our path.
+- ~~matplotlib install size/time on device — user-initiated via existing pip UI~~ **Amended during verification:** on-device pip cannot install matplotlib (native code, no Android wheels at runtime — Chaquopy only provides them at build time). matplotlib is now bundled in the APK via the gradle `pip` block (~40-60MB APK growth incl. numpy).
 - Large figures → large base64 strings in memory and file; accepted at notebook scale. `// ponytail:` note: downscale/compress if files balloon.
 - Echo `repr()` of huge objects (e.g. million-row df) produces big text; pandas truncates its repr by default; accepted.
