@@ -102,7 +102,8 @@ class NotebookAdapter(
         cells[position] = cell.copy(
             output = result.output,
             error = result.error,
-            executionCount = result.executionCount
+            executionCount = result.executionCount,
+            images = result.images
         )
         notifyItemChanged(position)
     }

@@ -1,12 +1,17 @@
 package com.jupyterdroid.ui
 
+import android.graphics.BitmapFactory
 import android.text.Editable
 import android.text.TextWatcher
+import android.util.Base64
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
 import android.widget.EditText
+import android.widget.ImageView
+import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.Toast
 import androidx.core.content.ContextCompat
@@ -19,6 +24,7 @@ class CodeCellViewHolder(view: View) : RecyclerView.ViewHolder(view) {
     val sourceEdit: EditText = view.findViewById(R.id.sourceEdit)
     val outputText: TextView = view.findViewById(R.id.outputText)
     val copyErrorButton: Button = view.findViewById(R.id.copyErrorButton)
+    val imagesContainer: LinearLayout = view.findViewById(R.id.imagesContainer)
     private var watcher: TextWatcher? = null
     private val syntaxColors = PythonHighlighter.Colors(
         keyword = ContextCompat.getColor(view.context, R.color.syntax_keyword),
@@ -76,6 +82,31 @@ class CodeCellViewHolder(view: View) : RecyclerView.ViewHolder(view) {
                 outputText.visibility = View.GONE
                 copyErrorButton.visibility = View.GONE
             }
+        }
+
+        imagesContainer.removeAllViews()
+        imagesContainer.visibility = if (cell.images.isEmpty()) View.GONE else View.VISIBLE
+        for (b64 in cell.images) {
+            val bitmap = try {
+                val bytes = Base64.decode(b64, Base64.DEFAULT)
+                BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
+            } catch (e: IllegalArgumentException) {
+                null
+            }
+            if (bitmap == null) {
+                Log.w("CodeCellViewHolder", "Undecodable image output skipped")
+                continue
+            }
+            imagesContainer.addView(
+                ImageView(itemView.context).apply {
+                    adjustViewBounds = true
+                    setImageBitmap(bitmap)
+                },
+                LinearLayout.LayoutParams(
+                    LinearLayout.LayoutParams.MATCH_PARENT,
+                    LinearLayout.LayoutParams.WRAP_CONTENT
+                )
+            )
         }
     }
 

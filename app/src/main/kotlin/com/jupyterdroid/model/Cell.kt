@@ -5,7 +5,8 @@ sealed class Cell {
         val source: String = "",
         val output: String = "",
         val error: String = "",
-        val executionCount: Int? = null
+        val executionCount: Int? = null,
+        val images: List<String> = emptyList()
     ) : Cell()
 
     data class Markdown(

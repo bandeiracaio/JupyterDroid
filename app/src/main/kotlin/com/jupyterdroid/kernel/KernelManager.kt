@@ -2,7 +2,12 @@ package com.jupyterdroid.kernel
 
 import com.chaquo.python.Python
 
-data class ExecutionResult(val output: String, val error: String, val executionCount: Int)
+data class ExecutionResult(
+    val output: String,
+    val error: String,
+    val executionCount: Int,
+    val images: List<String> = emptyList()
+)
 data class PipResult(val stdout: String, val stderr: String, val success: Boolean)
 
 class KernelManager private constructor() {
@@ -13,7 +18,8 @@ class KernelManager private constructor() {
         return ExecutionResult(
             output = result.callAttr("__getitem__", "output").toString(),
             error = result.callAttr("__getitem__", "error").toString(),
-            executionCount = result.callAttr("__getitem__", "execution_count").toInt()
+            executionCount = result.callAttr("__getitem__", "execution_count").toInt(),
+            images = result.callAttr("__getitem__", "images").asList().map { it.toString() }
         )
     }
 
