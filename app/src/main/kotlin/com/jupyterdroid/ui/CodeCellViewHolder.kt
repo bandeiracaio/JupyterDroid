@@ -38,8 +38,11 @@ class CodeCellViewHolder(view: View) : RecyclerView.ViewHolder(view) {
             override fun afterTextChanged(s: Editable) {
                 if (highlighting) return
                 highlighting = true
-                PythonHighlighter.highlight(s, syntaxColors)
-                highlighting = false
+                try {
+                    PythonHighlighter.highlight(s, syntaxColors)
+                } finally {
+                    highlighting = false
+                }
                 val pos = bindingAdapterPosition
                 if (pos != RecyclerView.NO_POSITION) onSourceChanged(pos, s.toString())
             }
