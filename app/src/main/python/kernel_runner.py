@@ -5,6 +5,11 @@ import traceback
 import subprocess
 import ctypes
 import threading
+import ast
+import base64
+
+# Must be set before user code first imports matplotlib.
+os.environ.setdefault("MPLBACKEND", "agg")
 
 _execution_count = 0
 _globals = {}
@@ -13,6 +18,37 @@ _exec_thread_id = None
 
 def data_path(filename):
     return os.path.join(os.path.dirname(__file__), filename)
+
+
+def _exec_with_echo(source):
+    """Run source in _globals; if the last top-level statement is a bare
+    expression, evaluate it and return its repr (Jupyter echo). Returns ""
+    when there is nothing to echo."""
+    tree = ast.parse(source, "<cell>")
+    if tree.body and isinstance(tree.body[-1], ast.Expr):
+        body = ast.Module(body=tree.body[:-1], type_ignores=[])
+        exec(compile(body, "<cell>", "exec"), _globals)
+        value = eval(compile(ast.Expression(tree.body[-1].value), "<cell>", "eval"), _globals)
+        if value is not None:
+            return repr(value) + "\n"
+        return ""
+    exec(compile(source, "<cell>", "exec"), _globals)
+    return ""
+
+
+def _capture_figures():
+    """Sweep all open matplotlib figures into base64 PNGs and close them.
+    No-op (and no import) when matplotlib was never loaded."""
+    if "matplotlib" not in sys.modules:
+        return []
+    import matplotlib.pyplot as plt
+    images = []
+    for num in plt.get_fignums():
+        buf = io.BytesIO()
+        plt.figure(num).savefig(buf, format="png")
+        images.append(base64.b64encode(buf.getvalue()).decode("ascii"))
+    plt.close("all")
+    return images
 
 
 def execute(source):
@@ -27,14 +63,25 @@ def execute(source):
     try:
         sys.stdout, sys.stderr = stdout_buf, stderr_buf
         error = ""
+        echo = ""
+        images = []
         try:
-            exec(compile(source, "<cell>", "exec"), _globals)
+            echo = _exec_with_echo(source)
         except BaseException:  # BaseException so KeyboardInterrupt lands here, not in the bridge
             error = traceback.format_exc()
+        # Sweep even after an error so leftover figures never leak into the
+        # next cell's result. A sweep failure becomes the cell's error.
+        try:
+            images = _capture_figures()
+        except BaseException:
+            images = []
+            if not error:
+                error = traceback.format_exc()
         return {
-            "output": stdout_buf.getvalue(),
+            "output": stdout_buf.getvalue() + echo,
             "error": error,
             "execution_count": _execution_count,
+            "images": images,
         }
     except BaseException:
         # A stale interrupt delivered here (after the inner try, before we return)
@@ -43,6 +90,7 @@ def execute(source):
             "output": stdout_buf.getvalue(),
             "error": traceback.format_exc(),
             "execution_count": _execution_count,
+            "images": [],
         }
     finally:
         sys.stdout, sys.stderr = old_out, old_err

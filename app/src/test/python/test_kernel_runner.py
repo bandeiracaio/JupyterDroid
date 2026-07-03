@@ -57,4 +57,39 @@ final = kernel_runner.execute("print(y)")
 assert final["error"] == "", final["error"]
 assert final["output"].strip() == "2"
 
+# 5. Expression echo: last bare expression is repr()'d like Jupyter.
+r = kernel_runner.execute("1 + 1")
+assert r["output"] == "2\n", r["output"]
+assert r["error"] == ""
+assert r["images"] == []
+
+r = kernel_runner.execute("z = 5")          # assignment: no echo
+assert r["output"] == "", r["output"]
+
+r = kernel_runner.execute("None")           # None: no echo
+assert r["output"] == "", r["output"]
+
+r = kernel_runner.execute("print('a')\n3")  # stdout first, then echo
+assert r["output"] == "a\n3\n", r["output"]
+
+r = kernel_runner.execute("'café'")    # unicode repr survives
+assert r["output"] == "'café'\n", r["output"]
+
+r = kernel_runner.execute("def f(:")        # syntax error unchanged
+assert "SyntaxError" in r["error"], r["error"]
+assert r["images"] == []
+
+r = kernel_runner.execute("z + 1")          # echo uses kernel globals
+assert r["output"] == "6\n", r["output"]
+
+# 6. Figure sweep fast path: host has no matplotlib.
+import sys as _sys
+assert "matplotlib" not in _sys.modules
+r = kernel_runner.execute("40 + 2")
+assert r["images"] == []
+
+# 7. Agg backend forced before any user code can import matplotlib.
+import os as _os
+assert _os.environ.get("MPLBACKEND") == "agg"
+
 print("ALL PASS")
