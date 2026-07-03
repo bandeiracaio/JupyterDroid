@@ -43,11 +43,13 @@ def _capture_figures():
         return []
     import matplotlib.pyplot as plt
     images = []
-    for num in plt.get_fignums():
-        buf = io.BytesIO()
-        plt.figure(num).savefig(buf, format="png")
-        images.append(base64.b64encode(buf.getvalue()).decode("ascii"))
-    plt.close("all")
+    try:
+        for num in plt.get_fignums():
+            buf = io.BytesIO()
+            plt.figure(num).savefig(buf, format="png")
+            images.append(base64.b64encode(buf.getvalue()).decode("ascii"))
+    finally:
+        plt.close("all")
     return images
 
 
