@@ -236,7 +236,7 @@ A grab-bag of candidate work, grounded in the current codebase. Not commitments 
 2. **pip UI fails silently for native packages** — detect the native-wheel case and explain it instead of a bare "Failed".
 3. **Markwon is core-only** — markdown cells don't render tables, strikethrough, or task lists; add the GFM extensions.
 4. **No unsaved-changes indicator** — add a dirty marker and debounced autosave-on-edit.
-5. **`execute_result` text/plain dropped on read** — desktop notebooks lose text outputs on round-trip.
+5. ~~**`execute_result` text/plain dropped on read** — desktop notebooks lose text outputs on round-trip.~~ Done — read now captures `execute_result`/`display_data` `text/plain` in document order (image preferred over its repr). Write-side type fidelity is still lossy (see Remove #5).
 6. **Long outputs render as one giant TextView** — truncate with "show more" or make them scroll.
 7. **Errors are raw red text** — add traceback collapsing.
 8. **Whole-cell re-highlight on every keystroke** — O(n) rescan per character; incremental highlighting is the upgrade.

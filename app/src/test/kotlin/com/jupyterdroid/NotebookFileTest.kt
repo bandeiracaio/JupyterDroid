@@ -91,6 +91,51 @@ class NotebookFileTest {
     }
 
     @Test
+    fun `execute_result text plain is read into output`() {
+        val nb = """
+            {"nbformat":4,"nbformat_minor":5,"metadata":{},"cells":[
+              {"cell_type":"code","source":["1 + 1"],"metadata":{},"execution_count":1,
+               "outputs":[{"output_type":"execute_result","execution_count":1,
+                           "data":{"text/plain":["2"]},"metadata":{}}]}
+            ]}
+        """.trimIndent()
+        val (_, cells) = NotebookFile.read(nb)
+        assertEquals("2", (cells[0] as Cell.Code).output)
+    }
+
+    @Test
+    fun `stream stdout and execute_result text concatenate in document order`() {
+        val nb = """
+            {"nbformat":4,"nbformat_minor":5,"metadata":{},"cells":[
+              {"cell_type":"code","source":["x"],"metadata":{},"execution_count":1,
+               "outputs":[
+                 {"output_type":"stream","name":"stdout","text":["hi\n"]},
+                 {"output_type":"execute_result","execution_count":1,
+                  "data":{"text/plain":["42"]},"metadata":{}}
+               ]}
+            ]}
+        """.trimIndent()
+        val (_, cells) = NotebookFile.read(nb)
+        assertEquals("hi\n42", (cells[0] as Cell.Code).output)
+    }
+
+    @Test
+    fun `display_data prefers image over its text_plain repr`() {
+        val nb = """
+            {"nbformat":4,"nbformat_minor":5,"metadata":{},"cells":[
+              {"cell_type":"code","source":["plt.plot(x)"],"metadata":{},"execution_count":1,
+               "outputs":[{"output_type":"display_data",
+                           "data":{"image/png":["QUJD"],"text/plain":["<Figure size 640x480>"]},
+                           "metadata":{}}]}
+            ]}
+        """.trimIndent()
+        val (_, cells) = NotebookFile.read(nb)
+        val c = cells[0] as Cell.Code
+        assertEquals(listOf("QUJD"), c.images)
+        assertEquals("", c.output)  // richer image wins; the <Figure …> repr is suppressed
+    }
+
+    @Test
     fun `markdown cells omit outputs and execution_count, code cells keep them`() {
         val serialized = NotebookFile.serialize(
             NotebookJson(),

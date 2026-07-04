@@ -63,8 +63,23 @@ object NotebookFile {
     private fun NotebookCellJson.toCell(): Cell = when (cellType) {
         "code" -> Cell.Code(
             source = source.joinToString(""),
-            output = outputs.filter { it.outputType == "stream" && it.streamName == "stdout" }
-                .flatMap { it["text"].asLines() }.joinToString(""),
+            // Walk outputs in document order: stream stdout plus the text/plain of
+            // execute_result/display_data (so a desktop notebook's `Out[n]` results
+            // aren't dropped). Skip text/plain when a richer image/png is present —
+            // that's matplotlib's "<Figure …>" repr, which the image supersedes.
+            output = outputs.mapNotNull { out ->
+                when (out.outputType) {
+                    "stream" ->
+                        if (out.streamName == "stderr") null
+                        else out["text"].asLines().joinToString("")
+                    "execute_result", "display_data" -> {
+                        val data = out["data"]?.jsonObject
+                        if (data?.get("image/png") != null) null
+                        else data?.get("text/plain")?.asLines()?.joinToString("")
+                    }
+                    else -> null
+                }
+            }.joinToString(""),
             error = outputs.filter { it.outputType == "stream" && it.streamName == "stderr" }
                 .flatMap { it["text"].asLines() }.joinToString(""),
             executionCount = executionCount,
