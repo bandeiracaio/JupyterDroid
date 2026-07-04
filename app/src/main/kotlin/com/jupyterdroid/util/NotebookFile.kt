@@ -5,12 +5,13 @@ import android.net.Uri
 import com.jupyterdroid.model.Cell
 import com.jupyterdroid.model.NotebookCellJson
 import com.jupyterdroid.model.NotebookJson
-import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
+import kotlinx.serialization.json.encodeToJsonElement
+import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 import java.io.File
@@ -44,7 +45,19 @@ object NotebookFile {
 
     fun serialize(notebookJson: NotebookJson, cells: List<Cell>): String {
         val updated = notebookJson.copy(cells = cells.map { it.toCellJson() })
-        return json.encodeToString(updated)
+        val tree = json.encodeToJsonElement(updated).jsonObject
+        // encodeDefaults emits outputs/execution_count on every cell; nbformat
+        // markdown cells must carry neither. Strip them from markdown cells only.
+        val prunedCells = tree.getValue("cells").jsonArray.map { cell ->
+            val obj = cell.jsonObject
+            if (obj["cell_type"]?.jsonPrimitive?.content == "markdown") {
+                JsonObject(obj - "outputs" - "execution_count")
+            } else {
+                obj
+            }
+        }
+        val pruned = JsonObject(tree + ("cells" to JsonArray(prunedCells)))
+        return json.encodeToString(JsonObject.serializer(), pruned)
     }
 
     private fun NotebookCellJson.toCell(): Cell = when (cellType) {

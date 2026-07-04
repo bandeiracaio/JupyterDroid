@@ -4,6 +4,9 @@ import com.jupyterdroid.model.Cell
 import com.jupyterdroid.model.NotebookJson
 import com.jupyterdroid.util.NotebookFile
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.jsonArray
+import kotlinx.serialization.json.jsonObject
+import kotlinx.serialization.json.jsonPrimitive
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
@@ -85,5 +88,22 @@ class NotebookFileTest {
         val roundTripped = cells[0] as Cell.Code
         assertEquals("hi\n", roundTripped.output)
         assertEquals(listOf("QUJD"), roundTripped.images)
+    }
+
+    @Test
+    fun `markdown cells omit outputs and execution_count, code cells keep them`() {
+        val serialized = NotebookFile.serialize(
+            NotebookJson(),
+            listOf(Cell.Markdown("# Hi"), Cell.Code(source = "x = 1", output = "1\n"))
+        )
+        val cells = Json.parseToJsonElement(serialized).jsonObject.getValue("cells").jsonArray
+        val md = cells[0].jsonObject
+        val code = cells[1].jsonObject
+
+        assertEquals("markdown", md.getValue("cell_type").jsonPrimitive.content)
+        assertTrue("markdown must not carry outputs", "outputs" !in md)
+        assertTrue("markdown must not carry execution_count", "execution_count" !in md)
+        assertTrue("code must carry outputs", "outputs" in code)
+        assertTrue("code must carry execution_count", "execution_count" in code)
     }
 }
