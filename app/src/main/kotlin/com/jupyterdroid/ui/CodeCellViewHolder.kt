@@ -1,10 +1,12 @@
 package com.jupyterdroid.ui
 
+import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.text.Editable
 import android.text.TextWatcher
 import android.util.Base64
 import android.util.Log
+import android.util.LruCache
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -19,6 +21,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.jupyterdroid.R
 import com.jupyterdroid.model.Cell
 import com.jupyterdroid.util.ErrorReporter
+import java.util.concurrent.Executors
 
 class CodeCellViewHolder(view: View) : RecyclerView.ViewHolder(view) {
     val sourceEdit: EditText = view.findViewById(R.id.sourceEdit)
@@ -87,26 +90,32 @@ class CodeCellViewHolder(view: View) : RecyclerView.ViewHolder(view) {
         imagesContainer.removeAllViews()
         imagesContainer.visibility = if (cell.images.isEmpty()) View.GONE else View.VISIBLE
         for (b64 in cell.images) {
-            val bitmap = try {
-                val bytes = Base64.decode(b64, Base64.DEFAULT)
-                BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
-            } catch (e: IllegalArgumentException) {
-                null
-            }
-            if (bitmap == null) {
-                Log.w("CodeCellViewHolder", "Undecodable image output skipped")
-                continue
+            val iv = ImageView(itemView.context).apply {
+                adjustViewBounds = true
+                tag = b64  // identifies which image this view is waiting for
             }
             imagesContainer.addView(
-                ImageView(itemView.context).apply {
-                    adjustViewBounds = true
-                    setImageBitmap(bitmap)
-                },
+                iv,
                 LinearLayout.LayoutParams(
                     LinearLayout.LayoutParams.MATCH_PARENT,
                     LinearLayout.LayoutParams.WRAP_CONTENT
                 )
             )
+            val cached = bitmapCache.get(b64)
+            if (cached != null) {
+                iv.setImageBitmap(cached)
+            } else {
+                // Decode off the main thread; a big matplotlib PNG decoded during bind
+                // (scroll recycling, notifyItemChanged) is what caused the jank/ANRs.
+                decodeExecutor.execute {
+                    val bmp = decode(b64)
+                    if (bmp != null) bitmapCache.put(b64, bmp)
+                    iv.post {
+                        // Guard against a recycled view now showing a different cell's image.
+                        if (bmp != null && iv.tag == b64) iv.setImageBitmap(bmp)
+                    }
+                }
+            }
         }
     }
 
@@ -115,6 +124,23 @@ class CodeCellViewHolder(view: View) : RecyclerView.ViewHolder(view) {
             val view = LayoutInflater.from(parent.context)
                 .inflate(R.layout.item_cell_code, parent, false)
             return CodeCellViewHolder(view)
+        }
+
+        // Process-wide: decoded plots are cached so scrolling back never re-decodes.
+        private val decodeExecutor = Executors.newSingleThreadExecutor()
+        private val bitmapCache = object : LruCache<String, Bitmap>(
+            (Runtime.getRuntime().maxMemory() / 8).toInt()  // ~1/8 of heap, in bytes
+        ) {
+            override fun sizeOf(key: String, value: Bitmap) = value.byteCount
+        }
+
+        private fun decode(b64: String): Bitmap? = try {
+            val bytes = Base64.decode(b64, Base64.DEFAULT)
+            BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
+                ?: run { Log.w("CodeCellViewHolder", "Undecodable image output skipped"); null }
+        } catch (e: IllegalArgumentException) {
+            Log.w("CodeCellViewHolder", "Bad base64 image output skipped")
+            null
         }
     }
 }

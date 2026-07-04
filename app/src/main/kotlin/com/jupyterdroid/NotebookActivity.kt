@@ -187,9 +187,18 @@ class NotebookActivity : AppCompatActivity() {
                 if (stopRequested) break  // interrupt killed the current cell; don't start the next
                 val cell = c as? Cell.Code ?: continue
                 val result = withContext(Dispatchers.IO) {
-                    try { km.execute(cell.source) } catch (e: Exception) { null }
+                    try {
+                        km.execute(cell.source)
+                    } catch (e: Exception) {
+                        km.reset()
+                        withContext(Dispatchers.Main) {
+                            showCopyableError("Kernel crash", e, extra = cell.source)
+                        }
+                        null
+                    }
                 }
-                result?.let { adapter.updateCellOutput(cell, it) }
+                if (result == null) break  // kernel crashed and reset — don't run later cells against a dead kernel
+                adapter.updateCellOutput(cell, result)
             }
             setRunning(false)
         }

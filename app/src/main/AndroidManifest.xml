@@ -24,6 +24,9 @@
             </intent-filter>
         </activity>
 
-        <activity android:name=".NotebookActivity" android:exported="false" />
+        <activity
+            android:name=".NotebookActivity"
+            android:exported="false"
+            android:configChanges="orientation|screenSize|screenLayout|keyboardHidden" />
     </application>
 </manifest>
