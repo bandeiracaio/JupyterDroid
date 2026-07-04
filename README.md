@@ -232,7 +232,7 @@ A grab-bag of candidate work, grounded in the current codebase. Not commitments 
 
 ### Improve
 
-1. **Syntax highlighter is regex-only** — misses f-string interiors, decorators, and `1_000`/`0o17` literals; wants a real tokenizer.
+1. ~~**Syntax highlighter is regex-only** — misses f-string interiors, decorators, and `1_000`/`0o17` literals~~ — decorators + `_`/octal literals done; f-string interiors still a real-tokenizer job.
 2. **pip UI fails silently for native packages** — detect the native-wheel case and explain it instead of a bare "Failed".
 3. **Markwon is core-only** — markdown cells don't render tables, strikethrough, or task lists; add the GFM extensions.
 4. **No unsaved-changes indicator** — add a dirty marker and debounced autosave-on-edit.
@@ -245,8 +245,8 @@ A grab-bag of candidate work, grounded in the current codebase. Not commitments 
 
 ### Remove
 
-1. **`READ_EXTERNAL_STORAGE` / `WRITE_EXTERNAL_STORAGE` permissions** — capped at old SDKs and unused (app is SAF-based).
-2. **Leftover `.claude/worktrees/titanic-sample-notebook/` worktree** — dead git worktree from an earlier feature.
+1. ~~**`READ_EXTERNAL_STORAGE` / `WRITE_EXTERNAL_STORAGE` permissions** — capped at old SDKs and unused (app is SAF-based).~~ Done.
+2. ~~**Leftover `.claude/worktrees/titanic-sample-notebook/` worktree** — dead git worktree from an earlier feature.~~ Done.
 3. **`matplotlib==3.6.0` + `fonttools==4.51.0` pins** — exist only to satisfy buildPython 3.9; bump buildPython and drop them.
 4. **`outputs: []` on saved markdown cells** — non-standard nbformat noise.
 5. **`execute_result`→`display_data` rewrite on save** — a special-case that changes output types; preserve the original.
