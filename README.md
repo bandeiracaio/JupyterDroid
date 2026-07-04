@@ -233,7 +233,7 @@ A grab-bag of candidate work, grounded in the current codebase. Not commitments 
 ### Improve
 
 1. ~~**Syntax highlighter is regex-only** — misses f-string interiors, decorators, and `1_000`/`0o17` literals~~ — decorators + `_`/octal literals done; f-string interiors still a real-tokenizer job.
-2. **pip UI fails silently for native packages** — detect the native-wheel case and explain it instead of a bare "Failed".
+2. ~~**pip UI fails silently for native packages** — detect the native-wheel case and explain it instead of a bare "Failed".~~ Done — `PipMessages` classifies native-build failures, missing packages, and surfaces stderr otherwise.
 3. **Markwon is core-only** — markdown cells don't render tables, strikethrough, or task lists; add the GFM extensions.
 4. **No unsaved-changes indicator** — add a dirty marker and debounced autosave-on-edit.
 5. ~~**`execute_result` text/plain dropped on read** — desktop notebooks lose text outputs on round-trip.~~ Done — read now captures `execute_result`/`display_data` `text/plain` in document order (image preferred over its repr). Write-side type fidelity is still lossy (see Remove #5).
