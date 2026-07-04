@@ -213,6 +213,51 @@ app/src/main/
 
 ---
 
+## Backlog / Ideas
+
+A grab-bag of candidate work, grounded in the current codebase. Not commitments — a menu.
+
+### Add
+
+1. **Per-cell Run button + `In [n]` execution badges** — cells only run from the toolbar today; `executionCount` is tracked but never shown.
+2. **Restart-kernel UI action** — `KernelManager.reset()` exists but is only called on crash; no user-facing way to clear state.
+3. **Find & replace across cell sources** — no search of any kind yet.
+4. **Export to HTML/PDF** — share a notebook as a self-contained document with plots inline.
+5. **Python keyboard accessory row** (`() [] {} : " ' =` + Tab) — mobile typing aid.
+6. **Clear-all-outputs action** — expected before sharing/committing a notebook.
+7. **Variable/namespace inspector** — list current kernel globals.
+8. **Duplicate-cell + copy-cell-to-clipboard** — we have delete/reorder but not duplicate.
+9. **Per-cell "running" spinner** — no per-cell feedback while executing, only the toolbar Run→Stop swap.
+10. **Auto-scroll to the executing cell during Run All** — no sense of progress on a long run.
+
+### Improve
+
+1. **Syntax highlighter is regex-only** — misses f-string interiors, decorators, and `1_000`/`0o17` literals; wants a real tokenizer.
+2. **pip UI fails silently for native packages** — detect the native-wheel case and explain it instead of a bare "Failed".
+3. **Markwon is core-only** — markdown cells don't render tables, strikethrough, or task lists; add the GFM extensions.
+4. **No unsaved-changes indicator** — add a dirty marker and debounced autosave-on-edit.
+5. **`execute_result` text/plain dropped on read** — desktop notebooks lose text outputs on round-trip.
+6. **Long outputs render as one giant TextView** — truncate with "show more" or make them scroll.
+7. **Errors are raw red text** — add traceback collapsing.
+8. **Whole-cell re-highlight on every keystroke** — O(n) rescan per character; incremental highlighting is the upgrade.
+9. **Image cache is memory-only** — add a disk cache and downscale oversized plots.
+10. **Stale-interrupt figure-sweep micro-window** — remaining hardening from the kernel-interrupt review.
+
+### Remove
+
+1. **`READ_EXTERNAL_STORAGE` / `WRITE_EXTERNAL_STORAGE` permissions** — capped at old SDKs and unused (app is SAF-based).
+2. **Leftover `.claude/worktrees/titanic-sample-notebook/` worktree** — dead git worktree from an earlier feature.
+3. **`matplotlib==3.6.0` + `fonttools==4.51.0` pins** — exist only to satisfy buildPython 3.9; bump buildPython and drop them.
+4. **`outputs: []` on saved markdown cells** — non-standard nbformat noise.
+5. **`execute_result`→`display_data` rewrite on save** — a special-case that changes output types; preserve the original.
+6. **Duplicate survival-grouping logic in the sample notebook** — `survival_rate_by` and `rates` reimplement the same counting.
+7. **Per-bind re-allocation in `CodeCellViewHolder`** — the "Copy error" listener and output colors are rebuilt every bind.
+8. **Pre-scoped-storage assumptions** — purge the legacy external-storage paths alongside the permissions.
+9. **The `plt.show()` workaround in the sample** — only there to suppress the Legend echo; removable if echo skips matplotlib artist objects.
+10. **Resolved `ponytail:` debt comments** — audit and delete stale ones so the remaining markers still mean something.
+
+---
+
 ## Design Spec
 
 Full design document: [`docs/superpowers/specs/2026-06-29-jupyterdroid-design.md`](docs/superpowers/specs/2026-06-29-jupyterdroid-design.md)
