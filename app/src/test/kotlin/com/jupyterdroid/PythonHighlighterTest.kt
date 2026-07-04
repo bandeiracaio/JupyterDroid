@@ -73,4 +73,49 @@ class PythonHighlighterTest {
         assertEquals(listOf(Kind.STRING, Kind.NUMBER), tokens.map { it.kind })
         assertEquals(4 to 10, tokens[0].start to tokens[0].end)
     }
+
+    @Test
+    fun underscoreSeparatedNumber() {
+        val tokens = PythonHighlighter.tokenize("n = 1_000_000")
+        assertEquals(listOf(Kind.NUMBER), tokens.map { it.kind })
+        assertEquals(4 to 13, tokens[0].start to tokens[0].end)
+    }
+
+    @Test
+    fun underscoreInHexNumber() {
+        val tokens = PythonHighlighter.tokenize("m = 0xFF_FF")
+        assertEquals(listOf(Kind.NUMBER), tokens.map { it.kind })
+        assertEquals(4 to 11, tokens[0].start to tokens[0].end)
+    }
+
+    @Test
+    fun octalNumber() {
+        val tokens = PythonHighlighter.tokenize("p = 0o17")
+        assertEquals(listOf(Kind.NUMBER), tokens.map { it.kind })
+        assertEquals(4 to 8, tokens[0].start to tokens[0].end)
+    }
+
+    @Test
+    fun decoratorIsHighlighted() {
+        val tokens = PythonHighlighter.tokenize("@property\ndef f(): pass")
+        assertEquals(
+            listOf(Kind.KEYWORD, Kind.KEYWORD, Kind.KEYWORD),
+            tokens.map { it.kind }
+        )
+        assertEquals(0 to 9, tokens[0].start to tokens[0].end)
+    }
+
+    @Test
+    fun dottedDecoratorIsHighlighted() {
+        val tokens = PythonHighlighter.tokenize("@app.route(\"/\")")
+        assertEquals(Kind.KEYWORD, tokens[0].kind)
+        assertEquals(0 to 10, tokens[0].start to tokens[0].end)
+    }
+
+    @Test
+    fun matmulWithSpacesIsNotADecorator() {
+        // "a @ b" — the @ operator with surrounding spaces must not read as a decorator.
+        val tokens = PythonHighlighter.tokenize("a @ b")
+        assertEquals(emptyList<Kind>(), tokens.map { it.kind })
+    }
 }

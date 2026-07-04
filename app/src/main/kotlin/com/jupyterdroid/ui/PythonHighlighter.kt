@@ -15,14 +15,20 @@ object PythonHighlighter {
         "not|or|pass|raise|return|try|while|with|yield"
 
     // Single left-to-right scan; alternation order makes strings/comments shadow
-    // keywords and numbers. ponytail: regex highlighter, swap for a real lexer
-    // only if f-string internals or soft keywords ever matter.
+    // keywords and numbers. Numbers allow `_` separators (1_000, 0xFF_FF) and
+    // hex/octal/binary bases; a leading `@name`/`@a.b` reads as a decorator and
+    // is coloured like a keyword. ponytail: regex highlighter, swap for a real
+    // lexer only if f-string internals, leading-dot floats (.5), or soft
+    // keywords ever matter; `a@b` matmul without spaces mis-reads as a decorator.
     private val tokenRegex = Regex(
         "(?<str>\"\"\"[\\s\\S]*?(?:\"\"\"|$)|'''[\\s\\S]*?(?:'''|$)" +
             "|\"(?:\\\\.|[^\"\\\\\n])*\"?|'(?:\\\\.|[^'\\\\\n])*'?)" +
             "|(?<com>#[^\n]*)" +
-            "|(?<kw>\\b(?:$KEYWORDS)\\b)" +
-            "|(?<num>\\b(?:0[xX][0-9a-fA-F]+|0[bB][01]+|\\d+(?:\\.\\d*)?(?:[eE][+-]?\\d+)?)\\b)"
+            "|(?<kw>\\b(?:$KEYWORDS)\\b|@\\w+(?:\\.\\w+)*)" +
+            "|(?<num>\\b(?:0[xX][0-9a-fA-F](?:_?[0-9a-fA-F])*" +
+            "|0[oO][0-7](?:_?[0-7])*" +
+            "|0[bB][01](?:_?[01])*" +
+            "|\\d(?:_?\\d)*(?:\\.(?:\\d(?:_?\\d)*)?)?(?:[eE][+-]?\\d(?:_?\\d)*)?)\\b)"
     )
 
     fun tokenize(text: String): List<Token> =
