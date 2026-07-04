@@ -251,7 +251,7 @@ A grab-bag of candidate work, grounded in the current codebase. Not commitments 
 4. ~~**`outputs: []` on saved markdown cells** — non-standard nbformat noise.~~ Done — markdown cells now save without `outputs`/`execution_count`.
 5. **`execute_result`→`display_data` rewrite on save** — a special-case that changes output types; preserve the original.
 6. **Duplicate survival-grouping logic in the sample notebook** — `survival_rate_by` and `rates` reimplement the same counting.
-7. **Per-bind re-allocation in `CodeCellViewHolder`** — the "Copy error" listener and output colors are rebuilt every bind.
+7. ~~**Per-bind re-allocation in `CodeCellViewHolder`** — the "Copy error" listener and output colors are rebuilt every bind.~~ Done — action-row listeners wired once in `onCreateViewHolder`; output/error colors hoisted to holder fields.
 8. **Pre-scoped-storage assumptions** — purge the legacy external-storage paths alongside the permissions.
 9. **The `plt.show()` workaround in the sample** — only there to suppress the Legend echo; removable if echo skips matplotlib artist objects.
 10. **Resolved `ponytail:` debt comments** — audit and delete stale ones so the remaining markers still mean something.

@@ -35,6 +35,8 @@ class CodeCellViewHolder(view: View) : RecyclerView.ViewHolder(view) {
         comment = ContextCompat.getColor(view.context, R.color.syntax_comment),
         number = ContextCompat.getColor(view.context, R.color.syntax_number),
     )
+    private val errorColor = ContextCompat.getColor(view.context, R.color.error_red)
+    private val outputColor = ContextCompat.getColor(view.context, R.color.output_text)
     private var highlighting = false
 
     fun bind(cell: Cell.Code, onSourceChanged: (Int, String) -> Unit) {
@@ -63,9 +65,7 @@ class CodeCellViewHolder(view: View) : RecyclerView.ViewHolder(view) {
         when {
             cell.error.isNotEmpty() -> {
                 outputText.visibility = View.VISIBLE
-                outputText.setTextColor(
-                    ContextCompat.getColor(itemView.context, R.color.error_red)
-                )
+                outputText.setTextColor(errorColor)
                 outputText.text = cell.error
                 copyErrorButton.visibility = View.VISIBLE
                 copyErrorButton.setOnClickListener {
@@ -75,9 +75,7 @@ class CodeCellViewHolder(view: View) : RecyclerView.ViewHolder(view) {
             }
             cell.output.isNotEmpty() -> {
                 outputText.visibility = View.VISIBLE
-                outputText.setTextColor(
-                    ContextCompat.getColor(itemView.context, R.color.output_text)
-                )
+                outputText.setTextColor(outputColor)
                 outputText.text = cell.output
                 copyErrorButton.visibility = View.GONE
             }

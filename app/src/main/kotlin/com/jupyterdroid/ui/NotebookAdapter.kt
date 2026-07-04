@@ -28,18 +28,22 @@ class NotebookAdapter(
         is Cell.Markdown -> TYPE_MARKDOWN
     }
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder =
-        when (viewType) {
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
+        val holder = when (viewType) {
             TYPE_CODE -> CodeCellViewHolder.create(parent)
             else -> MarkdownCellViewHolder.create(parent, markwon)
         }
+        // Action-row listeners resolve the position at click time, so wire them
+        // once per holder here rather than re-allocating on every (re)bind.
+        wireActions(holder)
+        return holder
+    }
 
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
         when (holder) {
             is CodeCellViewHolder -> holder.bind(cells[position] as Cell.Code, ::updateSource)
             is MarkdownCellViewHolder -> holder.bind(cells[position] as Cell.Markdown, ::updateSource)
         }
-        wireActions(holder)
     }
 
     override fun getItemCount() = cells.size
