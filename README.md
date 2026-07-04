@@ -250,7 +250,7 @@ A grab-bag of candidate work, grounded in the current codebase. Not commitments 
 3. **`matplotlib==3.6.0` + `fonttools==4.51.0` pins** — exist only to satisfy buildPython 3.9; bump buildPython and drop them.
 4. ~~**`outputs: []` on saved markdown cells** — non-standard nbformat noise.~~ Done — markdown cells now save without `outputs`/`execution_count`.
 5. **`execute_result`→`display_data` rewrite on save** — a special-case that changes output types; preserve the original.
-6. **Duplicate survival-grouping logic in the sample notebook** — `survival_rate_by` and `rates` reimplement the same counting.
+6. ~~**Duplicate survival-grouping logic in the sample notebook** — `survival_rate_by` and `rates` reimplement the same counting.~~ Done — both now call a shared `survival_counts` helper.
 7. ~~**Per-bind re-allocation in `CodeCellViewHolder`** — the "Copy error" listener and output colors are rebuilt every bind.~~ Done — action-row listeners wired once in `onCreateViewHolder`; output/error colors hoisted to holder fields.
 8. **Pre-scoped-storage assumptions** — purge the legacy external-storage paths alongside the permissions.
 9. **The `plt.show()` workaround in the sample** — only there to suppress the Legend echo; removable if echo skips matplotlib artist objects.
