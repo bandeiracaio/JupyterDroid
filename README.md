@@ -1,128 +1,144 @@
 # JupyterDroid
 
-A native Android app for running Jupyter notebooks locally on-device — fast app, fast execution.
+**Jupyter notebooks, running natively on your phone.** Real `.ipynb` files, a real in-process Python kernel, matplotlib plots, offline — no server, no WebView, no cloud.
 
-No remote server. No WebView. Python runs in-process, notebooks open instantly, and everything works offline.
+![platform](https://img.shields.io/badge/platform-Android%207.0%2B-3DDC84?logo=android&logoColor=white)
+![python](https://img.shields.io/badge/python-3.11-3776AB?logo=python&logoColor=white)
+![kotlin](https://img.shields.io/badge/Kotlin-7F52FF?logo=kotlin&logoColor=white)
+![release](https://img.shields.io/github/v/release/bandeiracaio/JupyterDroid?label=release)
+![license](https://img.shields.io/badge/license-MIT-blue)
+
+Open a `.ipynb`, run Python, see the output — on a train, on a plane, anywhere. It's Jupyter Notebook, mobile-native.
 
 ---
 
-## Philosophy
+## Contents
+
+- [Why](#why)
+- [Features](#features)
+- [Not yet](#not-yet)
+- [Install](#install)
+- [First run](#first-run)
+- [Development](#development)
+- [Architecture](#architecture)
+- [Error handling](#error-handling)
+- [Tech stack](#tech-stack)
+- [Roadmap](#roadmap)
+- [Backlog](#backlog--ideas)
+- [License](#license)
+
+---
+
+## Why
 
 **JupyterDroid is Jupyter Notebook, mobile-native — no more, no less.**
 
-Not a companion app, not a lightweight viewer, not an IDE with notebook support bolted on: the goal is full parity with what a `.ipynb` file and a Python kernel can do, running natively on a phone, online or off.
+Not a companion app, not a read-only viewer, not an IDE with notebook support bolted on. The goal is parity with what a `.ipynb` file and a Python kernel can do, running natively on a phone, online or off.
 
-- **Real notebooks** — reads and writes standard `.ipynb` (nbformat 4), fully compatible with JupyterLab and VS Code. Never a proprietary format.
-- **Fast** — lean UI, in-process kernel, no unnecessary layers. Opening a notebook should feel instant, not like waiting for a server.
-- **Works anywhere** — no remote server, no WebView, no network dependency. A notebook you can open on a train.
-- **Native Android** — Kotlin + Chaquopy. Not a wrapped web app.
-- **No more than Jupyter** — if it's not something Jupyter Notebook does, it's out of scope. No proprietary extensions, no lock-in.
+- **Real notebooks** — reads and writes standard `.ipynb` (nbformat 4), byte-compatible with JupyterLab and VS Code. Never a proprietary format.
+- **Fast** — lean UI, in-process CPython, no server round-trips. Opening a notebook is instant.
+- **Works anywhere** — no remote kernel, no WebView, no network dependency.
+- **Native Android** — Kotlin + [Chaquopy](https://chaquo.com/chaquopy/). Not a wrapped web app.
+- **Scoped like Jupyter** — if Jupyter Notebook doesn't do it, it's out of scope. No lock-in, no extensions.
 
 ---
 
-## What it can do
+## Features
 
-- Create new `.ipynb` notebooks (standard Jupyter nbformat 4 — opens in JupyterLab/VS Code)
-- Open existing `.ipynb` files from device storage via file picker
-- Keep a recent files list
-- **Code cells** — write Python, run it, see stdout/stderr inline below the cell
-- **Matplotlib plots** render as images in the cell (bundled matplotlib; saved into the `.ipynb`)
-- **Expression echo** — a bare expression on the last line prints its value, like Jupyter (so `df` shows the DataFrame)
-- State persists across cells — define a variable in cell 1, use it in cell 2
+**Notebooks & files**
+- Create new `.ipynb` notebooks, or open existing ones from device storage via the system file picker
+- Recent-files list on the home screen
+- Edits save **back to the original file** through the Storage Access Framework — no cache copy, no export step
+- Explicit **Save**, plus auto-save when the app is backgrounded
+
+**Editing**
+- **Code cells** with live Python **syntax highlighting** — keywords, strings, comments, numbers (incl. `1_000` / `0xFF` / `0o17`), and `@decorators`, themed for light and dark
 - **Markdown cells** — tap to edit, tap away to render (headings, bold, lists)
-- Run all cells in order with one tap
-- **pip install** packages on-device without leaving the app
-- Explicit save button + auto-save when the app backgrounds
-- Files opened via the picker save back to the original file (no cache copy)
-- Reorder cells (drag handle or ↑/↓ buttons) and delete cells (swipe or 🗑, with Undo)
-- Python syntax highlighting in code cells (keywords, strings, comments, numbers — live, light/dark themed)
-- Stop a running cell — toolbar Run becomes Stop; raises KeyboardInterrupt, kernel and globals survive
-- Kernel crash recovery — auto-restarts Python and shows a notification
+- **Reorder** cells (drag handle or ↑/↓) and **delete** them (swipe or 🗑, with **Undo**)
+- Survives screen **rotation** without losing edits or run state
 
-## What it cannot do (yet)
+**Execution**
+- Run a cell, or **Run All** in order, with one tap
+- **Stop** a running cell — the toolbar Run button becomes Stop and raises `KeyboardInterrupt`; the kernel and your variables survive
+- Persistent state across cells — define a variable in cell 1, use it in cell 2
+- **pip install** packages on-device, with failures that explain *why* (e.g. native packages can't compile on-device)
 
-Gaps toward full notebook parity — not permanent limitations.
+**Outputs**
+- stdout / stderr rendered inline below each cell (stderr in red, with a one-tap **Copy error**)
+- **Matplotlib plots** render as images in the cell — matplotlib is bundled, so no install needed — and are saved into the `.ipynb` as standard `image/png` outputs (they open with plots intact in desktop Jupyter)
+- **Expression echo** — a bare expression on a cell's last line prints its value, like Jupyter (so `df` shows the DataFrame)
+- Plot images are decoded off the main thread and cached, so scrolling a chart-heavy notebook stays smooth
+
+**Reliability**
+- **Kernel crash recovery** — if the kernel dies, Python is reset and a copyable error is surfaced so you can keep working
+
+---
+
+## Not yet
+
+Gaps toward full notebook parity — not permanent limitations. See the [backlog](#backlog--ideas) for the full list.
 
 - **Rich HTML outputs** — pandas DataFrames render as monospace text (via expression echo), not styled HTML tables
-- **Export** — no PDF, HTML, or other formats
-- **Multiple kernels** — one shared Python state per app session
+- **Export** — no PDF/HTML export yet
+- **Multiple kernels** — one shared Python session per app run
 
 ---
 
-## Install on Android
+## Install
 
-### Option A — Direct APK install (easiest)
+### Option A — Download the APK (easiest)
 
-**1. Enable Unknown Sources on your phone**
+1. **Allow sideloading:** Settings → Security (or Apps) → enable **Install unknown apps** for your browser or Files app.
+2. **Download** `app-debug.apk` from the [latest release](https://github.com/bandeiracaio/JupyterDroid/releases/latest) and tap it to install.
 
-Settings → Security (or Apps) → enable **Install unknown apps** for your browser or Files app.
-
-**2. Enable USB Debugging**
-
-Settings → About phone → tap **Build Number** 7 times → Developer Options → enable **USB Debugging**.
-
-**3. Download the APK**
-
-Go to the [latest release](https://github.com/bandeiracaio/JupyterDroid/releases/latest) and download `app-debug.apk`.
-
-Or install via ADB from your Mac:
+Or over ADB from a computer:
 
 ```bash
-# Download
 curl -L https://github.com/bandeiracaio/JupyterDroid/releases/latest/download/app-debug.apk -o app-debug.apk
-
-# Connect phone via USB, then:
-adb install app-debug.apk
+adb install -r app-debug.apk
 ```
 
-If `adb` is not on your PATH, use the full path: `~/android-sdk/platform-tools/adb`.
+> If `adb` isn't on your PATH, use the full path (e.g. `~/android-sdk/platform-tools/adb`). Run `adb devices` first — your phone should show as `device`; if it says `unauthorized`, unlock it and tap **Allow** on the USB-debugging prompt. This is a debug build, so Android will warn about the unknown source — expected for a sideloaded APK.
 
-**4. Verify ADB sees your phone**
+### Option B — Build from source
 
-```bash
-adb devices
-```
-
-You should see your device listed as `device`. If it says `unauthorized`, unlock your phone and tap **Allow** on the USB debugging prompt.
-
-**5. Install**
-
-```bash
-adb install app-debug.apk
-```
-
-`Success` means the app is installed. Open **JupyterDroid** from your launcher.
-
-> **Note:** This is a debug build. Android may warn you it's from an unknown source — that's expected for a sideloaded APK.
-
----
-
-### Option B — Build from source (Android Studio)
-
-Requires [Android Studio](https://developer.android.com/studio) (latest stable) and an Android device or emulator running Android 7.0+ (API 24).
-
-**1. Clone and open**
+Requires [Android Studio](https://developer.android.com/studio) and a device or emulator on Android 7.0+ (API 24).
 
 ```bash
 git clone https://github.com/bandeiracaio/JupyterDroid.git
 ```
 
-File → Open → select the `JupyterDroid` folder → Open.
+Open the folder in Android Studio, **Sync Gradle** when prompted (downloads Chaquopy + Python 3.11 and bundles matplotlib), then hit **Run** (▶). The first build takes a few minutes while Chaquopy assembles Python for ARM; later builds are fast. See [Development](#development) for command-line builds.
 
-**2. Sync Gradle**
+---
 
-Android Studio will prompt "Gradle files have changed" — click **Sync Now**. This downloads Chaquopy and Python 3.11 (~30 MB).
+## First run
 
-**3. Connect your device**
+The app ships with a bundled sample — **`sample_titanic_analysis.ipynb`** — seeded into your recent files on first launch. It walks the classic Titanic dataset using only the standard library, then adds matplotlib survival-rate bar charts, an age-distribution histogram, and an expression-echo demo. Tap **Run All** to see text output, plots, and echo together.
 
-- **Physical device:** enable Developer Options (Settings → About → tap Build Number 7 times), then enable USB Debugging. Connect via USB.
-- **Emulator:** Device Manager → Create Device → Pixel profile → API 24+ system image → Finish.
+> Upgrading and don't see the updated sample? It seeds only once. Clear the app's data (or reinstall) to re-seed.
 
-**4. Run**
+---
 
-Click the green **Run** button (▶) or press `Shift+F10`.
+## Development
 
-> First build takes a few minutes — Chaquopy compiles Python for ARM. Subsequent builds are fast.
+All Gradle commands need a JDK 17. The project uses Chaquopy 15.0.1 with build-Python 3.11.
+
+```bash
+# Build the debug APK
+./gradlew assembleDebug            # -> app/build/outputs/apk/debug/app-debug.apk
+
+# Install to a connected device / running emulator
+./gradlew installDebug
+
+# JVM unit tests (highlighter, nbformat round-trip, pip messages, sample notebook)
+./gradlew testDebugUnitTest
+
+# The Python kernel has its own host test — runs under plain python3, no device:
+python3 app/src/test/python/test_kernel_runner.py
+```
+
+Instrumented tests (`app/src/androidTest/`, e.g. the adapter reorder/delete behavior) require a connected device or emulator: `./gradlew connectedDebugAndroidTest`.
 
 ---
 
@@ -131,91 +147,95 @@ Click the green **Run** button (▶) or press `Shift+F10`.
 Three layers, no magic:
 
 ```
-UI (RecyclerView of cells)
-        ↓
-KernelManager (Kotlin coroutines)
-        ↓
-kernel_runner.py via Chaquopy (CPython in-process)
+UI  ──  RecyclerView of cells (Kotlin, Views)
+        │
+KernelManager  ──  Kotlin coroutines, Dispatchers.IO
+        │
+kernel_runner.py  ──  CPython in-process via Chaquopy
 ```
 
 ### Execution flow
 
-1. User taps **Run** on a code cell
-2. `NotebookActivity` calls `KernelManager.execute(source)` on `Dispatchers.IO`
-3. Chaquopy calls into `kernel_runner.py`, captures stdout/stderr
-4. `ExecutionResult(output, error, executionCount)` returned to main thread
-5. Cell output updates, `RecyclerView` item refreshes
+1. User taps **Run** (or **Run All**) on a code cell.
+2. `NotebookActivity` calls `KernelManager.execute(source)` on `Dispatchers.IO`.
+3. Chaquopy invokes `kernel_runner.execute()`, which runs the source, captures stdout/stderr, echoes the last expression, and sweeps any open matplotlib figures to base64 PNGs.
+4. An `ExecutionResult(output, error, executionCount, images)` returns to the main thread.
+5. The cell's `RecyclerView` item refreshes — text inline, plots decoded off-thread into image views.
 
-### File structure
+### Layout
 
 ```
 app/src/main/
 ├── kotlin/com/jupyterdroid/
-│   ├── MainActivity.kt              # file list + create new
-│   ├── NotebookActivity.kt          # notebook editor
+│   ├── JupyterDroidApp.kt          # Application entry
+│   ├── MainActivity.kt             # home: recent files, create/open, seeds the sample
+│   ├── NotebookActivity.kt         # notebook editor: run/stop, run-all, save, menu
 │   ├── model/
-│   │   ├── Notebook.kt              # data classes + JSON serialization
-│   │   └── Cell.kt                  # sealed class CodeCell / MarkdownCell
+│   │   ├── Cell.kt                 # sealed Cell: Cell.Code / Cell.Markdown
+│   │   └── NotebookJson.kt         # nbformat data classes (kotlinx.serialization)
 │   ├── kernel/
-│   │   └── KernelManager.kt         # Chaquopy lifecycle, execute(), pip()
+│   │   └── KernelManager.kt        # Chaquopy bridge: execute / interrupt / pipInstall / reset
 │   ├── ui/
-│   │   ├── NotebookAdapter.kt
-│   │   ├── CodeCellViewHolder.kt
-│   │   └── MarkdownCellViewHolder.kt
+│   │   ├── NotebookAdapter.kt      # cell list, reorder/delete, drag
+│   │   ├── CodeCellViewHolder.kt   # editor + highlighting + async image render
+│   │   ├── MarkdownCellViewHolder.kt
+│   │   ├── PythonHighlighter.kt    # regex tokenizer + span highlighter
+│   │   └── PipInstallBottomSheet.kt
 │   └── util/
-│       └── NotebookFile.kt          # read/write .ipynb to storage
+│       ├── NotebookFile.kt         # read/write .ipynb (SAF + File)
+│       ├── PipMessages.kt          # human-readable pip failure classification
+│       └── ErrorReporter.kt        # copyable error text ("paste to Claude")
 └── python/
-    └── kernel_runner.py             # exec-based kernel, stdout/stderr capture
+    ├── kernel_runner.py            # exec-based kernel: echo, figure sweep, interrupt
+    └── titanic.csv                 # data for the bundled sample
 ```
 
 ---
 
-## Tech Stack
+## Error handling
+
+| Scenario | Behaviour |
+|---|---|
+| Python exception in a cell | Traceback shown inline below the cell in red, with a **Copy error** button |
+| Cell interrupted (Stop) | `KeyboardInterrupt` traceback in the cell; kernel and globals survive |
+| Kernel / bridge crash | Python is reset and a copyable **Kernel crash** snackbar is shown; Run All stops rather than running on against a dead kernel |
+| pip install failure | Bottom sheet explains the cause — native-build limitation, package not found, or the raw stderr |
+| File read/write error | Copyable error surfaced; a failed save never loses the in-memory notebook |
+
+---
+
+## Tech stack
 
 | | |
 |---|---|
 | Language | Kotlin |
-| Min SDK | API 24 (Android 7.0) |
-| Python runtime | [Chaquopy](https://chaquo.com/chaquopy/) 15.0.1 |
-| Python version | 3.11 |
-| JSON | `kotlinx.serialization` |
+| Min / target SDK | API 24 (Android 7.0) / API 34 |
+| Python runtime | [Chaquopy](https://chaquo.com/chaquopy/) 15.0.1, CPython 3.11 |
+| Bundled packages | matplotlib (+ numpy) |
+| Serialization | `kotlinx.serialization` |
 | Markdown | [Markwon](https://github.com/noties/Markwon) |
 | Concurrency | Kotlin Coroutines |
-
----
-
-## Error Handling
-
-| Scenario | Behaviour |
-|---|---|
-| Python exception | stderr shown inline below cell in red |
-| Kernel crash | auto-restart + snackbar "Kernel restarted" |
-| pip install failure | stderr shown in bottom sheet |
-| File I/O error | toast with OS error message |
+| UI | Views + RecyclerView + Material Components (no Compose, no WebView) |
 
 ---
 
 ## Roadmap
 
-### V1 (current — `feat/v1-implementation`)
-- [x] Project scaffold (Gradle + Chaquopy)
-- [x] `.ipynb` read/write (standard nbformat 4)
-- [x] Kernel integration (exec-based, persistent globals)
-- [x] Code cell UI + execution
-- [x] Markdown cell UI + rendering
-- [x] pip install UI
-- [x] Save / auto-save
+**V1 — core notebook** ✅
+Project scaffold (Gradle + Chaquopy), `.ipynb` read/write, exec-based kernel with persistent globals, code + markdown cells, pip install, save / auto-save.
 
-### V2 — closing the gap toward full notebook parity
-- [x] Matplotlib plots + expression echo — shipped 2026-07-03
-- [x] Kernel interrupt controls — shipped 2026-07-03
-- [x] Syntax highlighting in code cells — shipped 2026-07-02
+**V2 — notebook parity** ✅
+- Matplotlib plots + expression echo — shipped 2026-07-03
+- Kernel interrupt controls — shipped 2026-07-03
+- Syntax highlighting — shipped 2026-07-02
+
+Next up is drawn from the backlog below — likeliest headliners: HTML/PDF export, per-cell run + execution badges, and richer pandas output.
 
 ---
 
 ## Backlog / Ideas
 
-A grab-bag of candidate work, grounded in the current codebase. Not commitments — a menu.
+Candidate work, grounded in the current codebase — a menu, not commitments. Struck-through items are done.
 
 ### Add
 
@@ -232,11 +252,11 @@ A grab-bag of candidate work, grounded in the current codebase. Not commitments 
 
 ### Improve
 
-1. ~~**Syntax highlighter is regex-only** — misses f-string interiors, decorators, and `1_000`/`0o17` literals~~ — decorators + `_`/octal literals done; f-string interiors still a real-tokenizer job.
-2. ~~**pip UI fails silently for native packages** — detect the native-wheel case and explain it instead of a bare "Failed".~~ Done — `PipMessages` classifies native-build failures, missing packages, and surfaces stderr otherwise.
+1. ~~**Syntax highlighter regex gaps** — `1_000`/`0o17` literals, decorators.~~ Done — `_`/octal numbers and `@decorators` handled; f-string interiors still want a real tokenizer.
+2. ~~**pip UI fails silently for native packages.**~~ Done — `PipMessages` classifies native-build failures, missing packages, and surfaces stderr otherwise.
 3. **Markwon is core-only** — markdown cells don't render tables, strikethrough, or task lists; add the GFM extensions.
 4. **No unsaved-changes indicator** — add a dirty marker and debounced autosave-on-edit.
-5. ~~**`execute_result` text/plain dropped on read** — desktop notebooks lose text outputs on round-trip.~~ Done — read now captures `execute_result`/`display_data` `text/plain` in document order (image preferred over its repr). Write-side type fidelity is still lossy (see Remove #5).
+5. ~~**`execute_result` text/plain dropped on read.**~~ Done — read captures `execute_result`/`display_data` `text/plain` in document order (image preferred over its repr).
 6. **Long outputs render as one giant TextView** — truncate with "show more" or make them scroll.
 7. **Errors are raw red text** — add traceback collapsing.
 8. **Whole-cell re-highlight on every keystroke** — O(n) rescan per character; incremental highlighting is the upgrade.
@@ -245,19 +265,21 @@ A grab-bag of candidate work, grounded in the current codebase. Not commitments 
 
 ### Remove
 
-1. ~~**`READ_EXTERNAL_STORAGE` / `WRITE_EXTERNAL_STORAGE` permissions** — capped at old SDKs and unused (app is SAF-based).~~ Done.
-2. ~~**Leftover `.claude/worktrees/titanic-sample-notebook/` worktree** — dead git worktree from an earlier feature.~~ Done.
+1. ~~**`READ_EXTERNAL_STORAGE` / `WRITE_EXTERNAL_STORAGE` permissions** — unused (app is SAF-based).~~ Done.
+2. ~~**Leftover `titanic-sample-notebook` git worktree.**~~ Done.
 3. **`matplotlib==3.6.0` + `fonttools==4.51.0` pins** — exist only to satisfy buildPython 3.9; bump buildPython and drop them.
-4. ~~**`outputs: []` on saved markdown cells** — non-standard nbformat noise.~~ Done — markdown cells now save without `outputs`/`execution_count`.
+4. ~~**`outputs: []` / `execution_count` on saved markdown cells** — non-standard nbformat.~~ Done.
 5. **`execute_result`→`display_data` rewrite on save** — a special-case that changes output types; preserve the original.
-6. ~~**Duplicate survival-grouping logic in the sample notebook** — `survival_rate_by` and `rates` reimplement the same counting.~~ Done — both now call a shared `survival_counts` helper.
-7. ~~**Per-bind re-allocation in `CodeCellViewHolder`** — the "Copy error" listener and output colors are rebuilt every bind.~~ Done — action-row listeners wired once in `onCreateViewHolder`; output/error colors hoisted to holder fields.
-8. **Pre-scoped-storage assumptions** — purge the legacy external-storage paths alongside the permissions.
+6. ~~**Duplicate survival-grouping logic in the sample notebook.**~~ Done — shared `survival_counts` helper.
+7. ~~**Per-bind re-allocation in `CodeCellViewHolder`.**~~ Done — listeners wired once, colors hoisted.
+8. **Pre-scoped-storage assumptions** — purge remaining legacy external-storage code paths.
 9. **The `plt.show()` workaround in the sample** — only there to suppress the Legend echo; removable if echo skips matplotlib artist objects.
-10. **Resolved `ponytail:` debt comments** — audit and delete stale ones so the remaining markers still mean something.
+10. **Resolved `ponytail:` debt comments** — audit and delete stale ones.
 
 ---
 
-## Design Spec
+## License
+
+[MIT](LICENSE) © 2026 bandeiracaio
 
 Full design document: [`docs/superpowers/specs/2026-06-29-jupyterdroid-design.md`](docs/superpowers/specs/2026-06-29-jupyterdroid-design.md)
